@@ -1,0 +1,59 @@
+---
+import { SCENES } from "../data/scenes.ts";
+import Scene from "./Scene.astro";
+---
+
+<!--
+  One photograph in bars, as wide as the page. Its top dissolves into the light ground, and its foot closes
+  into the dark ground of the questions, so the section has no edge of its own.
+-->
+<section class="panorama theme-light ground">
+  <div class="panorama__picture">
+    <div class="panorama__canvas">
+      <Scene scene={SCENES.panorama} />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The panorama lies above the start of the questions, which begins under its dark foot. */
+  .panorama {
+    position: relative;
+    z-index: var(--layer-raised);
+  }
+
+  .panorama__picture {
+    display: flex;
+    justify-content: center;
+    height: calc(6 * var(--cell));
+    overflow: clip;
+  }
+
+  /* The canvas has the shape of the photograph. On a narrow screen it is wider than the screen, and the screen shows its middle part. */
+  .panorama__canvas {
+    flex: none;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  /*
+   * On a wide screen the canvas is as wide as the page. The panorama starts behind the last wallet feature, so
+   * that the features reach the questions and the picture never fills a screen alone: the owner found that
+   * screen empty on 5 Oct 2026. The pull is a share of the width, like the height of the picture and the size of
+   * the panels, so the last feature sits on the top of the picture at every width.
+   */
+  @media (min-width: 62rem) {
+    .panorama {
+      margin-top: -45vw;
+    }
+
+    .panorama__picture {
+      height: auto;
+    }
+
+    .panorama__canvas {
+      width: 100%;
+      height: auto;
+    }
+  }
+</style>

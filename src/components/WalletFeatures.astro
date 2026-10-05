@@ -1,0 +1,255 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import { IMAGES } from "../assets/images.ts";
+import { COPY, type WalletFeatureId } from "../data/copy.ts";
+import { EXCHANGER, SECTION_IDS } from "../data/site.ts";
+import Points from "./Points.astro";
+import WalletWidget from "./WalletWidget.astro";
+
+// The ink drawings of the first site: the seed carved in stone, a scroll, a spear on its way, a column on the
+// march, and a watch by a beacon.
+const FEATURE_IMAGES: Record<WalletFeatureId, ImageMetadata> = {
+  hold: IMAGES.featureSeed,
+  receive: IMAGES.featureScroll,
+  send: IMAGES.featureSend,
+  activity: IMAGES.featureSync,
+  node: IMAGES.featureNode,
+};
+
+// The logo of the exchanger shows at this height, in rem, on its dark pill.
+const PARTNER_LOGO_HEIGHT_REM = 1.125;
+const REM_PX = 16;
+
+// A drawing shows wider than its place, so that it stays sharp.
+const IMAGE_WIDTHS_PX = [480, 800, 1200];
+const IMAGE_SIZES = "(min-width: 62rem) 34rem, 92vw";
+const INDEX_DIGITS = 2;
+
+const { wallet } = COPY;
+const { bridge } = wallet;
+const logoHeightPx = PARTNER_LOGO_HEIGHT_REM * REM_PX;
+const logoWidthPx = Math.round((logoHeightPx * IMAGES.changenowLogo.width) / IMAGES.changenowLogo.height);
+---
+
+<!--
+  The wallet, feature by feature, over the scene of the sunrise. Each feature is one row: a panel, a drawing with a
+  small widget of the app on it, beside its text. On a wide screen the panel changes sides from row to row. The
+  rows rise into view as the page scrolls; nothing stays pinned, so the section is as long as its content.
+  The bridge follows as the last row, in the same layout, with its state in the place of a number and the
+  exchanger beside its title, after the swap of Vizor.
+-->
+<div class="features text-plain" id={SECTION_IDS.wallet}>
+  <div class="container">
+    <div class="features__list inset-wide" data-sunrise-next>
+      {wallet.features.map((feature, index) => (
+        <article class="feature">
+          <div class="feature__media" data-reveal="lift">
+            <div class="panel">
+              <Image
+                class="panel__art"
+                src={FEATURE_IMAGES[feature.id]}
+                alt={feature.imageAlt}
+                widths={IMAGE_WIDTHS_PX}
+                sizes={IMAGE_SIZES}
+              />
+              <WalletWidget widget={feature.widget} />
+            </div>
+          </div>
+          <div class="feature__card" data-reveal="lift">
+            <p class="feature__index type-h5" aria-hidden="true">
+              {String(index + 1).padStart(INDEX_DIGITS, "0")}
+            </p>
+            <h3 class="feature__title type-h5">{feature.title}</h3>
+            <p class="feature__body text-soft">{feature.text}</p>
+            <Points items={feature.points} />
+          </div>
+        </article>
+      ))}
+      <article class="feature" id={SECTION_IDS.bridge}>
+        <div class="feature__media" data-reveal="lift">
+          <div class="panel">
+            <Image
+              class="panel__art"
+              src={IMAGES.featureBridge}
+              alt={bridge.imageAlt}
+              widths={IMAGE_WIDTHS_PX}
+              sizes={IMAGE_SIZES}
+            />
+            <WalletWidget widget={bridge.widget} />
+          </div>
+        </div>
+        <div class="feature__card" data-reveal="lift">
+          <p class="feature__index type-h5">{bridge.status}</p>
+          <div class="partnered">
+            <h3 class="feature__title type-h5">{bridge.title}</h3>
+            <p class="partnered__by">
+              <span class="partnered__label">{bridge.poweredBy}</span>
+              <span class="partnered__logo">
+                <Image src={IMAGES.changenowLogo} alt={EXCHANGER.label} width={logoWidthPx} height={logoHeightPx} />
+              </span>
+            </p>
+          </div>
+          <p class="feature__body text-soft">{bridge.text}</p>
+          <Points items={bridge.points} />
+        </div>
+      </article>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* The features lie above the panorama, which starts behind the last row on a wide screen. */
+  .features {
+    position: relative;
+    z-index: var(--layer-over);
+    padding-block: var(--space-48);
+  }
+
+  .features__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-48);
+  }
+
+  /* A track of minmax(0, 1fr) can be narrower than its content, so a wide part cannot push the page wider. */
+  .feature {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-48);
+    align-items: center;
+  }
+
+  /* A square of white paper with the drawing, and the widget of the app on its lower edge. */
+  .panel {
+    position: relative;
+    aspect-ratio: 1;
+    background: #fff;
+    border-radius: var(--space-32);
+    box-shadow: 0 2rem 4rem rgb(0 0 0 / 0.12);
+  }
+
+  .panel :global(.panel__art) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+
+  .panel :global(.widget) {
+    position: absolute;
+    bottom: 5%;
+    left: 5%;
+  }
+
+  /* The text lies on frosted light ground, so the bars of the scene behind it never cross the letters. */
+  .feature__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+    padding: var(--space-32);
+    /*
+     * The text lies on the ground, which fades out around it into the scene: a wide soft shadow of the same
+     * color, so that no straight side cuts the bars behind it. The owner asked on 5 Oct 2026 for a page without
+     * visible edges.
+     */
+    background: var(--ground);
+    border-radius: var(--space-48);
+    box-shadow: 0 0 3rem 1.75rem var(--ground);
+  }
+
+  .feature__index {
+    margin: 0;
+    color: var(--color-accent);
+  }
+
+  .feature__title,
+  .feature__body {
+    margin: 0;
+  }
+
+  .feature__title {
+    font-size: clamp(2rem, 3.4vw, 3.5rem);
+    line-height: 1.05;
+  }
+
+  /*
+   * The title of the bridge with its exchanger beside it, after the swap of Vizor: "Powered by" over the logo. The
+   * rules of ChangeNOW allow its logo only in green and white, so the logo lies on a dark pill, like the widgets of
+   * the app, and keeps its colors.
+   */
+  .partnered {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-16);
+  }
+
+  .partnered__by {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin: 0;
+  }
+
+  .partnered__label {
+    color: var(--ink-soft);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* The logo keeps its full colors: the rules of ChangeNOW allow no faded or monochrome logo. */
+  .partnered__logo {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 0.5rem 0.875rem;
+    background: var(--color-coal);
+    border-radius: var(--radius-pill);
+  }
+
+  .partnered__logo :global(img) {
+    display: block;
+    width: auto;
+    height: 1.125rem;
+  }
+
+  .feature__body {
+    font-size: 1.0625rem;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  @media (min-width: 62rem) {
+    .features {
+      padding-block: var(--space-24) var(--space-136);
+    }
+
+    .features__list {
+      gap: var(--space-136);
+    }
+
+    /*
+     * The panel and the text share the row in two equal halves; every second row puts the panel on the right. The
+     * text card reaches past its half by its own padding, so that its letters line up with the edges of the panels.
+     */
+    .feature {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--inset-gap);
+    }
+
+    .feature:nth-child(even) .feature__media {
+      order: 2;
+    }
+
+    .feature__card {
+      margin-inline: calc(-1 * var(--space-32));
+    }
+
+    /* The widget hangs over the lower edge of its panel, so that it seems to float above it. */
+    .panel :global(.widget) {
+      bottom: -6%;
+    }
+  }
+</style>

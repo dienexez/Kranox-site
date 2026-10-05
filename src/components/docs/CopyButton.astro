@@ -1,0 +1,64 @@
+---
+import { DOCS } from "../../data/docs.ts";
+
+interface Props {
+  /** The text that a click puts on the clipboard. */
+  text: string;
+}
+
+const { text } = Astro.props;
+const { label, copied, failed } = DOCS.copyButton;
+---
+
+<!--
+  An orange pill that copies a value, like the main button of a widget of the app on the home page. The script in
+  scripts/docs/clipboard.ts sets data-state to "copied" or "failed" for a moment and shows the label of that state.
+  Without a script the button hides.
+-->
+<button
+  class="docs-copy"
+  type="button"
+  data-copy={text}
+  data-state="idle"
+  data-label-idle={label}
+  data-label-copied={copied}
+  data-label-failed={failed}
+>
+  <span data-copy-label>{label}</span>
+</button>
+
+<style>
+  .docs-copy {
+    flex: none;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-dark);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: background-color var(--duration-short) var(--ease-out);
+  }
+
+  /* After a copy the pill turns light for a moment, so that the change shows. */
+  .docs-copy[data-state="copied"] {
+    background: var(--color-light);
+  }
+
+  .docs-copy[data-state="failed"] {
+    background: var(--color-light);
+    color: var(--color-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docs-copy {
+      transition: none;
+    }
+  }
+
+  @media (scripting: none) {
+    .docs-copy {
+      display: none;
+    }
+  }
+</style>

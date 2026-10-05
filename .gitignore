@@ -1,0 +1,7 @@
+# Built and installed files stay out of the repository.
+node_modules/
+dist/
+.astro/
+
+# Files of macOS.
+.DS_Store

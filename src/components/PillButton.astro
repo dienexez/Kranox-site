@@ -1,0 +1,96 @@
+---
+interface Props {
+  href: string;
+  /** "ink": the color of the text of its theme. "accent": the accent color, for the main action. */
+  tone?: "ink" | "accent";
+  /** An external link sends no referrer. */
+  external?: boolean;
+}
+
+const { href, tone = "ink", external = false } = Astro.props;
+---
+
+<a class:list={["pill", `pill--${tone}`]} href={href} rel={external ? "noreferrer" : undefined}>
+  <span class="pill__label type-p6">
+    <slot />
+  </span>
+</a>
+
+<style>
+  /*
+   * The button is a pill. Under the pointer, the pill grows into a box with square corners, and a frame
+   * shows inside the box.
+   */
+  .pill {
+    --pill-grow: calc(-1 * var(--space-4));
+    --pill-radius: calc(var(--size-pill) / 2);
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--size-pill);
+    padding: var(--space-12) var(--space-24);
+    color: var(--pill-label);
+    white-space: nowrap;
+  }
+
+  .pill--ink {
+    --pill-ground: var(--ink);
+    --pill-label: var(--ground);
+  }
+
+  .pill--accent {
+    --pill-ground: var(--color-accent);
+    --pill-label: var(--color-dark);
+  }
+
+  .pill::before,
+  .pill::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    border-radius: var(--pill-radius);
+    transition:
+      inset var(--duration-medium) var(--ease-out),
+      border-radius var(--duration-medium) var(--ease-out),
+      opacity var(--duration-medium) var(--ease-out);
+  }
+
+  /* The ground of the pill. */
+  .pill::before {
+    inset: 0 var(--pill-grow);
+    background: var(--pill-ground);
+  }
+
+  /* The frame. It waits outside the pill, and moves in under the pointer. */
+  .pill::after {
+    inset: var(--pill-grow);
+    border: var(--border-thick) solid var(--pill-label);
+    opacity: 0;
+  }
+
+  .pill:hover::before {
+    inset: var(--pill-grow);
+    border-radius: 0;
+  }
+
+  .pill:hover::after {
+    inset: 0;
+    border-radius: 0;
+    opacity: 1;
+  }
+
+  @media not all and (min-width: 62rem) {
+    .pill {
+      padding-inline: var(--space-32);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pill::before,
+    .pill::after {
+      transition: none;
+    }
+  }
+</style>

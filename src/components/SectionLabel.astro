@@ -1,0 +1,52 @@
+---
+interface Props {
+  text: string;
+  /** The label of a section is its heading for assistive technology. */
+  as?: "h2" | "p";
+}
+
+// Three stars stand on each side of the label.
+const STARS_PER_SIDE = 3;
+
+const { text, as: Tag = "p" } = Astro.props;
+const stars = Array.from({ length: STARS_PER_SIDE });
+---
+
+<div class="label" data-reveal="rise">
+  {[0, 1].map((side) => (
+    <span class="label__stars" style={`order: ${side * 2}`} aria-hidden="true">
+      {stars.map(() => (
+        <svg class="label__star" viewBox="0 0 8 8">
+          <path d="M4 0c.4 2.2 1.8 3.6 4 4-2.2.4-3.6 1.8-4 4-.4-2.2-1.8-3.6-4-4 2.2-.4 3.6-1.8 4-4Z" />
+        </svg>
+      ))}
+    </span>
+  ))}
+  <Tag class="label__text type-p6">{text}</Tag>
+</div>
+
+<style>
+  .label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-16);
+  }
+
+  /* The text stands between the two groups of stars. */
+  .label__text {
+    order: 1;
+  }
+
+  .label__stars {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .label__star {
+    width: var(--size-star-width);
+    height: var(--size-star-height);
+    fill: currentColor;
+  }
+</style>

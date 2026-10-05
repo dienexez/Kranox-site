@@ -1,0 +1,39 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id } = Astro.props;
+---
+
+<!--
+  A block of the downloads page on tinted glass, with the large corners of the cards of the home page, and its
+  content in the middle. The anchor sits on the outer box: the inner box rises into view, and a link that scrolls to
+  a box that still waits below its place would overshoot by the height of the box.
+-->
+<div id={id}>
+  <div class="card" data-reveal="rise">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-24);
+    height: 100%;
+    padding: var(--space-32);
+    background: color-mix(in srgb, var(--ink) 5%, transparent);
+    border: var(--border-thin) solid color-mix(in srgb, var(--ink) 12%, transparent);
+    border-radius: var(--space-24);
+    text-align: center;
+  }
+
+  @media not all and (min-width: 62rem) {
+    .card {
+      padding: var(--space-24) var(--space-16);
+    }
+  }
+</style>

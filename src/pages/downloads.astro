@@ -1,0 +1,83 @@
+---
+import { IMAGES } from "../assets/images.ts";
+import DeviceGroup from "../components/downloads/DeviceGroup.astro";
+import DownloadsHeader from "../components/downloads/DownloadsHeader.astro";
+import InfoCard from "../components/downloads/InfoCard.astro";
+import VerifyBlock from "../components/downloads/VerifyBlock.astro";
+import Footer from "../components/Footer.astro";
+import Menu from "../components/Menu.astro";
+import { COPY } from "../data/copy.ts";
+import { DOWNLOADS_COPY, DOWNLOADS_SECTION_IDS, isGroupShown } from "../data/downloads.ts";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const { meta, groups, desktopPoints, desktopPicture, source, help } = DOWNLOADS_COPY;
+---
+
+<!--
+  The downloads page, after getmonero.org/downloads, in the look of the home page: the whole page lies on the dark
+  ground, like the app itself. The desktop comes first with its files, then how to verify a file, then mobile, then
+  the source code and help. A group shows only when it has a platform that the owner shows. On 5 Oct 2026 the owner
+  asked for every part in the middle, in one column, with a wider margin at the sides.
+-->
+<BaseLayout title={meta.title} description={meta.description} socialImageAlt={COPY.meta.socialImageAlt}>
+  <Menu />
+  <main class="downloads theme-dark ground">
+    <DownloadsHeader />
+    <div class="downloads__body container">
+      {isGroupShown("desktop") && (
+        <DeviceGroup
+          group={groups.desktop}
+          points={desktopPoints}
+          picture={{ src: IMAGES.appDesktopWallet, alt: desktopPicture.alt }}
+        />
+      )}
+      <VerifyBlock />
+      {isGroupShown("mobile") && <DeviceGroup group={groups.mobile} />}
+      <div class="downloads__pair">
+        <InfoCard id={DOWNLOADS_SECTION_IDS.source} heading={source.heading} text={source.text} links={[source.link]} />
+        <InfoCard
+          id={DOWNLOADS_SECTION_IDS.help}
+          heading={help.heading}
+          text={help.text}
+          links={help.links}
+          warning={help.warning}
+        />
+      </div>
+    </div>
+  </main>
+  <Footer />
+  <script>
+    import { initPageMotion } from "../scripts/motion/index.ts";
+
+    initPageMotion();
+  </script>
+</BaseLayout>
+
+<style>
+  /* The page keeps a wider margin at the sides than the home page, so that no text runs close to the edge. */
+  .downloads {
+    --space-gutter: var(--space-32);
+  }
+
+  /* One column in the middle of the page, at most eight cells of the grid wide. */
+  .downloads__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-136);
+    max-width: calc(8 * var(--cell));
+    margin-inline: auto;
+    padding-bottom: var(--space-136);
+  }
+
+  .downloads__pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-24);
+  }
+
+  @media (min-width: 62rem) {
+    .downloads__pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

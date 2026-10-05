@@ -1,0 +1,217 @@
+---
+import DocsHero from "../components/docs/DocsHero.astro";
+import DocsSection from "../components/docs/DocsSection.astro";
+import DocsSidebar from "../components/docs/DocsSidebar.astro";
+import Footer from "../components/Footer.astro";
+import Menu from "../components/Menu.astro";
+import Scene from "../components/Scene.astro";
+import { COPY } from "../data/copy.ts";
+import { DOCS } from "../data/docs.ts";
+import { SCENES } from "../data/scenes.ts";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const { meta, groups } = DOCS;
+
+// Each section carries its place in the whole page, so the numbers run on from group to group.
+let count = 0;
+const numbered = groups.map((group) => ({
+  label: group.label,
+  sections: group.sections.map((section) => ({ section, number: ++count })),
+}));
+---
+
+<!--
+  The docs. The layout follows docs.ponsfamily.com, which the owner showed on 5 Oct 2026: the title at the top, the
+  list of the sections at the side, and the sections beside it. The look follows the home page, as the owner asked
+  the same day: the cream ground, the label between stars and the title in capitals, the sections like the features
+  of the wallet, white paper and dark widgets of the app, and the footer of the home page.
+-->
+<BaseLayout title={meta.title} description={meta.description} socialImageAlt={COPY.meta.socialImageAlt}>
+  <Menu />
+  <main class="docs theme-light ground">
+    <!--
+      The parts keep the room at their sides of the wallet features on the home page, through the same class, so
+      that their edges line up with the home page. The owner found the first sides too close to the screen.
+    -->
+    <div class="docs__top container">
+      <div class="inset-wide">
+        <DocsHero />
+      </div>
+    </div>
+    <div class="docs__body container">
+      <div class="grid inset-wide">
+        <aside class="docs__side">
+          <DocsSidebar />
+        </aside>
+        <article class="docs__content text-plain">
+          {numbered.map((group) => (
+            <div class="docs__group">
+              <p class="docs-label">{group.label}</p>
+              {group.sections.map(({ section, number }) => (
+                <DocsSection section={section} number={number} />
+              ))}
+            </div>
+          ))}
+        </article>
+      </div>
+    </div>
+    <!-- A band of bars turns the cream into the dark ground of the footer, as below the hero of the home page. -->
+    <div class="docs__fence">
+      <Scene scene={SCENES.fence} />
+    </div>
+  </main>
+  <Footer />
+  <script>
+    import { initDocs } from "../scripts/docs/index.ts";
+
+    initDocs();
+  </script>
+</BaseLayout>
+
+<style is:global>
+  /*
+   * The values of the docs page. The sizes of the plain text are in rem, like the long texts of the site; the space
+   * between the parts uses the units of the home page.
+   */
+  .docs {
+    /* The parts start this far below the top of the screen: below the menu, which floats there. */
+    --docs-top: calc(var(--space-menu-top) + var(--size-menu-bar) + var(--space-24));
+    /* The plain text needs more contrast than the soft ink of the labels. */
+    --docs-soft: color-mix(in srgb, var(--ink) 72%, transparent);
+    --docs-line: color-mix(in srgb, var(--ink) 16%, transparent);
+    --docs-pill: color-mix(in srgb, var(--color-white) 72%, transparent);
+
+    --docs-radius-paper: 1.5rem;
+    --docs-radius-widget: 1.25rem;
+    --docs-radius-field: 0.75rem;
+    --docs-shadow-paper: 0 1.5rem 3rem color-mix(in srgb, var(--color-black) 8%, transparent);
+    --docs-shadow-widget: 0 1.5rem 3rem color-mix(in srgb, var(--color-black) 24%, transparent);
+    --docs-pad-paper: 1.5rem 1.75rem;
+    --docs-pad-paper-inline: 1.75rem;
+
+    /* A dark widget of the app: the coal of the brand with the cream for the ink. */
+    --docs-widget-ground: var(--color-dark);
+    --docs-widget-raised: color-mix(in srgb, var(--color-light) 8%, var(--color-dark));
+    --docs-widget-line: color-mix(in srgb, var(--color-light) 12%, transparent);
+    --docs-widget-ink: var(--color-light);
+    --docs-widget-soft: color-mix(in srgb, var(--color-light) 62%, transparent);
+
+    --docs-size-control: 2.75rem;
+    --docs-size-dot: 0.4375rem;
+    --docs-size-step: 3.5rem;
+    --docs-size-fact-label: 11rem;
+    /* A list that scrolls fades out over this height at its foot. */
+    --docs-size-fade: 1.5rem;
+
+    --docs-type-text: 1.0625rem;
+    --docs-type-small: 0.9375rem;
+    --docs-type-code: 0.8125rem;
+  }
+
+  /* A small label in capitals, like the labels of the columns of the footer. It keeps its look in plain text. */
+  .docs .docs-label {
+    color: var(--ink-soft);
+    font-size: var(--type-p6);
+    font-stretch: var(--font-stretch-text);
+    font-weight: var(--font-weight-text);
+    line-height: var(--leading-p6);
+    letter-spacing: var(--tracking-text);
+    text-transform: uppercase;
+  }
+
+  /* Plain words in the text: a code value, and a link. DocsInline.astro writes both. */
+  .docs .docs-code-inline {
+    padding: 0.1em 0.4em;
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, var(--ink) 7%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    overflow-wrap: anywhere;
+  }
+
+  .docs .docs-link {
+    text-decoration: underline var(--border-thin);
+    text-decoration-color: var(--docs-line);
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--duration-short) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .docs .docs-link:hover {
+      text-decoration-color: currentColor;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docs .docs-link {
+      transition: none;
+    }
+  }
+</style>
+
+<style>
+  .docs__top {
+    padding-top: calc(var(--space-menu-top) + var(--size-menu-bar) + var(--space-136));
+    padding-bottom: var(--space-136);
+  }
+
+  .docs__body {
+    padding-bottom: var(--space-136);
+  }
+
+  /* As high as the band below the hero of the home page. */
+  .docs__fence {
+    height: calc(3 * var(--cell));
+  }
+
+  .docs__side,
+  .docs__content {
+    grid-column: 1 / -1;
+  }
+
+  .docs__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-136);
+    font-size: var(--docs-type-text);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+  }
+
+  /* The sections of a group follow each other between thin lines, like the questions on the home page. */
+  .docs__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-48);
+  }
+
+  .docs__group :global(.docs-section + .docs-section) {
+    padding-top: var(--space-48);
+    border-top: var(--border-thin) solid var(--docs-line);
+  }
+
+  /* The name of the group stands close above its first section. */
+  .docs__group > .docs-label {
+    margin-bottom: calc(var(--space-16) - var(--space-48));
+  }
+
+  @media not all and (min-width: 62rem) {
+    .docs__side {
+      margin-bottom: var(--space-48);
+    }
+  }
+
+  /*
+   * The side stretches along the sections, so that the list inside it can stay in view while they scroll. The
+   * sections reach the last column, so that the room at the right matches the room at the left.
+   */
+  @media (min-width: 62rem) {
+    .docs__side {
+      grid-column: 1 / 4;
+    }
+
+    .docs__content {
+      grid-column: 5 / -1;
+    }
+  }
+</style>

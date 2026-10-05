@@ -1,0 +1,37 @@
+---
+interface Props {
+  text: string;
+  /** The platform that comes first carries the accent. */
+  accent?: boolean;
+}
+
+const { text, accent = false } = Astro.props;
+---
+
+<!-- When a platform gets its build, in a small pill with a dot. It is a state, not a button. -->
+<span class:list={["chip type-p6", { "chip--accent": accent }]}>{text}</span>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-4) var(--space-12);
+    border: var(--border-thin) solid color-mix(in srgb, var(--ink) 24%, transparent);
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+  }
+
+  .chip::before {
+    content: "";
+    flex: none;
+    width: 0.5em;
+    height: 0.5em;
+    background: var(--ink-soft);
+    border-radius: var(--radius-round);
+  }
+
+  .chip--accent::before {
+    background: var(--color-accent);
+  }
+</style>

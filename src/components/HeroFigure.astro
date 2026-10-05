@@ -1,0 +1,141 @@
+---
+import { Image } from "astro:assets";
+import palette from "@brand/palette.json";
+import { IMAGES } from "../assets/images.ts";
+import { COPY } from "../data/copy.ts";
+
+const picture = IMAGES.heroFigure;
+
+// The disc behind the helmet: its center and its width, in percent of the picture.
+const DISC = { centerX: 56, centerY: 30, width: 50 } as const;
+
+// The figure fades into the ground toward its lower edge and its sides, so that it shows no cut edge.
+// The fade is an ellipse: its center and its radii in percent of the picture, and the share of the radius that stays solid.
+// The ellipse ends at 88 percent of the height, so that the shoulders are gone before the lead, which starts there
+// on a wide screen.
+const FADE = { centerY: 30, radiusX: 62, radiusY: 58, solidShare: 55 } as const;
+
+const IMAGE_WIDTHS_PX = [320, 640];
+const IMAGE_SIZES = "(max-width: 62rem) 80vw, 36rem";
+
+const style = [
+  `--figure-ratio: ${picture.width / picture.height}`,
+  `--disc-x: ${DISC.centerX}%`,
+  `--disc-y: ${DISC.centerY}%`,
+  `--disc-width: ${DISC.width}%`,
+  `--fade-center-y: ${FADE.centerY}%`,
+  `--fade-radius-x: ${FADE.radiusX}%`,
+  `--fade-radius-y: ${FADE.radiusY}%`,
+  `--fade-solid: ${FADE.solidShare}%`,
+].join(";");
+---
+
+<!--
+  The figure of the first site. The script draws the picture as dots on the canvas, and the pointer moves
+  the dots. The picture stays in the page for assistive technology. It also shows when the script does not run.
+-->
+<figure
+  class="figure"
+  style={style}
+  data-figure
+  data-figure-dark={palette.colors.black}
+  data-figure-light={palette.colors.white}
+>
+  <div class="figure__stage">
+    <span class="figure__disc" aria-hidden="true"></span>
+    <Image
+      src={picture}
+      alt={COPY.hero.figureAlt}
+      widths={IMAGE_WIDTHS_PX}
+      sizes={IMAGE_SIZES}
+      loading="eager"
+      data-figure-picture
+    />
+    <canvas class="figure__canvas" aria-hidden="true" data-figure-canvas></canvas>
+  </div>
+</figure>
+
+<script>
+  import { initParticleFigure } from "../scripts/particle-figure.ts";
+
+  await initParticleFigure();
+</script>
+
+<style>
+  /* The figure has the shape of its picture. A parent limits its height with --figure-max-height. */
+  .figure {
+    width: min(100%, var(--figure-max-height) * var(--figure-ratio));
+    margin: 0 auto;
+  }
+
+  /*
+   * The stage fades into the ground along an ellipse, so that the figure has no cut edge at its sides and
+   * below. An older browser needs the prefix.
+   */
+  .figure__stage {
+    --fade: radial-gradient(
+      ellipse var(--fade-radius-x) var(--fade-radius-y) at 50% var(--fade-center-y),
+      var(--color-black) var(--fade-solid),
+      transparent
+    );
+    position: relative;
+    aspect-ratio: var(--figure-ratio);
+    -webkit-mask-image: var(--fade);
+    mask-image: var(--fade);
+  }
+
+  .figure__disc {
+    position: absolute;
+    top: var(--disc-y);
+    left: var(--disc-x);
+    width: var(--disc-width);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    background: var(--color-accent);
+    border-radius: var(--radius-round);
+  }
+
+  .figure__stage :global(img) {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* A finger that moves up or down on the canvas scrolls the page. */
+  .figure__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: pan-y;
+  }
+
+  /* When the dots show, the picture is invisible, but assistive technology still reads it. */
+  .figure[data-figure-ready] .figure__stage :global(img) {
+    opacity: 0;
+  }
+
+  /*
+   * Before the script starts, the stage stays hidden, so that the picture does not show and then turn into
+   * dots. global.css holds the keyframes. When the script does not start, the picture shows after the wait.
+   */
+  @media (scripting: enabled) {
+    .figure:not([data-figure-ready]) .figure__stage {
+      animation: wait-for-script 0s linear var(--duration-script-wait) both;
+    }
+  }
+
+  /* The disc grows into place while the dots come together. */
+  @media (prefers-reduced-motion: no-preference) {
+    .figure[data-figure-ready] .figure__disc {
+      animation: disc-enter var(--duration-long) var(--ease-out) both;
+    }
+  }
+
+  @keyframes disc-enter {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+  }
+</style>

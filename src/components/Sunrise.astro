@@ -1,0 +1,223 @@
+---
+import { COPY } from "../data/copy.ts";
+import { SCENES } from "../data/scenes.ts";
+import Scene from "./Scene.astro";
+import SectionLabel from "./SectionLabel.astro";
+import WalletFeatures from "./WalletFeatures.astro";
+
+const { sunrise } = COPY;
+---
+
+<!--
+  The section starts as a dark curtain with a sun in its middle. While the user scrolls, the view moves into
+  the sun: the curtain opens, the light ground fills the screen, and the title grows to its size.
+  Then, on a wide screen, a second scene develops on the light ground, and the wallet passes over it feature by
+  feature. The title stays in view only until the view has moved into the sun.
+-->
+<section class="sunrise theme-light" data-sunrise>
+  <div class="sunrise__intro">
+    <div class="sunrise__lead wide-only"></div>
+    <div class="sunrise__title">
+      <div class="container">
+        <div class="grid">
+          <div class="sunrise__heading" data-sunrise-heading>
+            <SectionLabel text={sunrise.label} />
+            <h2 class="type-h3 text-center text-balance">{sunrise.title}</h2>
+          </div>
+        </div>
+      </div>
+      <!-- A small sign that the page goes on while the view moves into the sun. The script shows it. -->
+      <p class="sunrise__hint" aria-hidden="true" data-sunrise-hint>
+        <span>{sunrise.hint}</span>
+        <svg class="sunrise__hint-arrow" viewBox="0 0 24 24">
+          <path d="M12 4v16m-6-6 6 6 6-6"></path>
+        </svg>
+      </p>
+    </div>
+    <div class="sunrise__curtain">
+      <div class="sunrise__canvas">
+        <Scene scene={SCENES.sunriseIntro} />
+      </div>
+    </div>
+    <div class="sunrise__run" data-sunrise-run></div>
+  </div>
+  <div class="sunrise__after">
+    <div class="sunrise__outro wide-only">
+      <Scene scene={SCENES.sunriseOutro} />
+    </div>
+    <WalletFeatures />
+  </div>
+</section>
+
+<style>
+  .sunrise {
+    /* The curtain is this much higher than the screen, so that it also covers the lead of the section. */
+    --sunrise-lead: calc(0.36 * var(--screen));
+    position: relative;
+    background: var(--ground);
+  }
+
+  .sunrise__lead {
+    height: var(--sunrise-lead);
+  }
+
+  /* The title and the curtain share one screen. Both stay in view while the rest of the section passes. */
+  .sunrise__title,
+  .sunrise__curtain {
+    position: sticky;
+    top: 0;
+    height: var(--screen);
+  }
+
+  .sunrise__title {
+    z-index: var(--layer-raised);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /*
+   * The sign to keep scrolling: a small pill of dark glass at the foot of the screen, like the menu at its
+   * top. It stands twice as far from the edge as the menu, clear of the home bar of a phone.
+   */
+  .sunrise__hint {
+    --hint-glass: color-mix(in srgb, var(--color-dark) 72%, transparent);
+    --hint-blur: 0.5rem;
+    --hint-time: 0.4s;
+    position: absolute;
+    bottom: calc(2 * var(--space-menu-top));
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.125rem;
+    background: var(--hint-glass);
+    -webkit-backdrop-filter: blur(var(--hint-blur));
+    backdrop-filter: blur(var(--hint-blur));
+    border-radius: var(--radius-pill);
+    color: var(--color-light);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    translate: -50% 0.5rem;
+    transition:
+      opacity var(--hint-time) var(--ease-out),
+      translate var(--hint-time) var(--ease-out);
+    pointer-events: none;
+  }
+
+  .sunrise__hint[data-visible] {
+    opacity: 1;
+    translate: -50% 0;
+  }
+
+  .sunrise__hint-arrow {
+    width: 0.875rem;
+    height: 0.875rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: var(--border-thick);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* The arrow sinks a little and comes back, again and again. */
+  @media (prefers-reduced-motion: no-preference) {
+    .sunrise__hint-arrow {
+      animation: hint-sink 1.6s ease-in-out infinite;
+    }
+  }
+
+  @keyframes hint-sink {
+    50% {
+      translate: 0 0.25rem;
+    }
+  }
+
+  .sunrise__heading {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-32);
+  }
+
+  .sunrise__curtain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: calc(-1 * var(--screen));
+    overflow: clip;
+    pointer-events: none;
+  }
+
+  /* On a narrow screen the canvas is two screens wide, so that the sun has room around it. */
+  .sunrise__canvas {
+    flex: none;
+    width: 200%;
+    height: 100%;
+  }
+
+  /* The view moves into the sun while this empty block passes. */
+  .sunrise__run {
+    height: calc(2 * var(--screen));
+  }
+
+  /*
+   * Without motion the curtain is open from the start, so the section needs no room for the way into the
+   * sun, and the title and the curtain scroll with the page. A curtain that stayed would keep the dark band
+   * at its top in view.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .sunrise__title,
+    .sunrise__curtain {
+      position: relative;
+    }
+
+    .sunrise__run {
+      height: calc(0.5 * var(--screen));
+    }
+  }
+
+  /*
+   * The wallet features come into view from below during the last part of the way into the sun, while the title
+   * stands in the middle of the screen, so that no empty screen lies between the title and the first feature.
+   */
+  .sunrise__after {
+    margin-top: calc(-0.3 * var(--screen));
+  }
+
+  /* The scene lies behind the first wallet features, which start at its top, and scrolls with them. */
+  .sunrise__outro {
+    height: var(--screen);
+  }
+
+  .sunrise__outro + :global(.features) {
+    margin-top: calc(-1 * var(--screen));
+  }
+
+  /* On a narrow screen the scene does not show, and the features follow the title on the light ground. */
+  @media (max-width: 61.99rem) {
+    .sunrise__outro + :global(.features) {
+      margin-top: 0;
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .sunrise__heading {
+      grid-column: 4 / 10;
+    }
+
+    .sunrise__curtain {
+      overflow: visible;
+    }
+
+    .sunrise__canvas {
+      width: 100%;
+      height: calc(var(--screen) + var(--sunrise-lead));
+    }
+  }
+</style>

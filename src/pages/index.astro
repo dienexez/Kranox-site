@@ -1,0 +1,28 @@
+---
+import Faq from "../components/Faq.astro";
+import Footer from "../components/Footer.astro";
+import Hero from "../components/Hero.astro";
+import Menu from "../components/Menu.astro";
+import Panorama from "../components/Panorama.astro";
+import Prologue from "../components/Prologue.astro";
+import Sunrise from "../components/Sunrise.astro";
+import { COPY } from "../data/copy.ts";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title={COPY.meta.title} description={COPY.meta.description} socialImageAlt={COPY.meta.socialImageAlt}>
+  <Menu />
+  <main>
+    <Hero />
+    <Prologue />
+    <Sunrise />
+    <Panorama />
+    <Faq />
+  </main>
+  <Footer />
+  <script>
+    import { initHomeMotion } from "../scripts/motion/index.ts";
+
+    initHomeMotion();
+  </script>
+</BaseLayout>

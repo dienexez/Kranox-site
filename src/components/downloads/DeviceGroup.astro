@@ -1,0 +1,114 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import { type DeviceGroup, DOWNLOADS_SECTION_IDS, SHOWN_PLATFORMS } from "../../data/downloads.ts";
+import FileList from "./FileList.astro";
+import PartHeading from "./PartHeading.astro";
+
+interface Props {
+  group: DeviceGroup;
+  /** What the app does, in short points. */
+  points?: readonly string[];
+  picture?: { src: ImageMetadata; alt: string };
+}
+
+// The picture of the app shows wider than its place, so that it stays sharp. It fills the column of the page: at most
+// eight cells of the grid on a wide screen, and the screen without its margins on a narrow one.
+const PICTURE_WIDTHS_PX = [480, 960, 1440];
+const PICTURE_SIZES = "(min-width: 62rem) 67vw, 84vw";
+
+const { group, points, picture } = Astro.props;
+const platforms = SHOWN_PLATFORMS.filter((platform) => platform.group === group.id);
+---
+
+<!--
+  One kind of device, after a product of getmonero.org/downloads: its name, what it does, a picture of the app, and
+  its files, one below the other in the middle of the page. The owner asked on 5 Oct 2026 for every part of the
+  page in the middle.
+-->
+<section class="group" id={DOWNLOADS_SECTION_IDS[group.id]}>
+  <div class="group__text">
+    <PartHeading reveal>{group.title}</PartHeading>
+    <p class="group__lead text-plain" data-reveal="lines">
+      {group.text}
+    </p>
+    {points !== undefined && (
+      <ul class="group__points text-plain" data-reveal="rise">
+        {points.map((point) => (
+          <li class="group__point">{point}</li>
+        ))}
+      </ul>
+    )}
+  </div>
+  {picture !== undefined && (
+    <figure class="group__picture" data-reveal="rise">
+      <Image src={picture.src} alt={picture.alt} widths={PICTURE_WIDTHS_PX} sizes={PICTURE_SIZES} />
+    </figure>
+  )}
+  <div class="group__files" data-reveal="rise">
+    <FileList platforms={platforms} />
+  </div>
+</section>
+
+<style>
+  .group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-48);
+    text-align: center;
+  }
+
+  .group__text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-24);
+  }
+
+  .group__lead {
+    max-width: var(--measure-read);
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+  }
+
+  /* The points stand in pills that wrap from the middle, each with the orange dot of the points of the home page. */
+  .group__points {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-8);
+    max-width: var(--measure-read);
+  }
+
+  .group__point {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-8) var(--space-16);
+    border: var(--border-thin) solid color-mix(in srgb, var(--ink) 14%, transparent);
+    border-radius: var(--radius-pill);
+    font-size: var(--type-p4);
+    font-weight: 600;
+  }
+
+  .group__point::before {
+    content: "";
+    flex: none;
+    width: 0.5em;
+    height: 0.5em;
+    background: var(--color-accent);
+    border-radius: var(--radius-round);
+  }
+
+  .group__picture,
+  .group__files {
+    width: 100%;
+  }
+
+  .group__picture :global(img) {
+    width: 100%;
+    height: auto;
+  }
+</style>

@@ -1,0 +1,45 @@
+---
+interface Props {
+  /** A text with two marks: `code` for a value that a user types or reads, and [label](href) for a link. */
+  text: string;
+}
+
+type Piece =
+  { kind: "text"; text: string } | { kind: "code"; text: string } | { kind: "link"; text: string; href: string };
+
+// A pair of backticks, or a label in brackets with its address in parentheses.
+const MARK = /`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)/g;
+
+function split(text: string): Piece[] {
+  const pieces: Piece[] = [];
+  let start = 0;
+  for (const match of text.matchAll(MARK)) {
+    if (match.index > start) pieces.push({ kind: "text", text: text.slice(start, match.index) });
+    const [whole, code, label, href] = match;
+    if (code !== undefined) pieces.push({ kind: "code", text: code });
+    else if (label !== undefined && href !== undefined) pieces.push({ kind: "link", text: label, href });
+    start = match.index + whole.length;
+  }
+  if (start < text.length) pieces.push({ kind: "text", text: text.slice(start) });
+  return pieces;
+}
+
+// A link to another site sends no referrer, like the other outbound links of the site.
+function isOutbound(href: string): boolean {
+  return /^https?:\/\//.test(href);
+}
+
+const pieces = split(Astro.props.text);
+---
+
+{pieces.map((piece) =>
+  piece.kind === "code" ? (
+    <code class="docs-code-inline">{piece.text}</code>
+  ) : piece.kind === "link" ? (
+    <a class="docs-link" href={piece.href} rel={isOutbound(piece.href) ? "noreferrer" : undefined}>
+      {piece.text}
+    </a>
+  ) : (
+    piece.text
+  ),
+)}

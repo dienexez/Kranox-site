@@ -1,0 +1,247 @@
+---
+import { COPY } from "../data/copy.ts";
+import { LEGAL } from "../data/legal.ts";
+import { SCENES } from "../data/scenes.ts";
+import { CONTACT_EMAIL, DOCS_HREF, DOWNLOADS_HREF, SOCIAL_LINKS, legalHref, sectionHref } from "../data/site.ts";
+import FooterLegal from "./FooterLegal.astro";
+import Scene from "./Scene.astro";
+
+interface FooterLink {
+  label: string;
+  href: string;
+  /** A link to another site gives that site no address of the page. */
+  external?: boolean;
+}
+
+interface FooterColumn {
+  label: string;
+  links: readonly FooterLink[];
+}
+
+const { footer } = COPY;
+
+// The three columns of links: the pages of the site, the legal pages, and the places to follow the build.
+const columns: readonly FooterColumn[] = [
+  {
+    label: footer.siteLabel,
+    links: [
+      ...footer.sections.map((item) => ({ label: item.label, href: sectionHref(item.section) })),
+      { label: footer.download, href: DOWNLOADS_HREF },
+      { label: footer.docs, href: DOCS_HREF },
+    ],
+  },
+  {
+    label: LEGAL.label,
+    links: LEGAL.pages.map((page) => ({ label: page.label, href: legalHref(page.slug) })),
+  },
+  {
+    label: footer.followLabel,
+    links: [
+      ...Object.values(SOCIAL_LINKS).map((link) => ({ ...link, external: true })),
+      { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
+    ],
+  },
+];
+---
+
+<!--
+  The footer is one screen high. On a wide screen the frame starts at two times its size and shrinks to its size
+  while the footer scrolls into view, so that the page ends on the whole picture. The links stand in columns at
+  the top, beside the trophy, and the last row lies on the light field below it.
+  On a wide screen the scene lies behind the text. On a narrow screen it stands between the links and the last row.
+-->
+<footer class="footer theme-dark ground" data-footer>
+  <div class="footer__frame" data-footer-frame>
+    <div class="footer__content container">
+      <div class="footer__top grid">
+        {columns.map((column) => (
+          <div class="footer__column">
+            <p class="type-p6 text-soft">{column.label}</p>
+            <ul class="footer__links type-p6">
+              {column.links.map((link) => (
+                <li>
+                  <a class="footer__link" href={link.href} rel={link.external ? "noreferrer" : undefined}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div class="footer__column footer__column--status">
+          <p class="type-p6 text-soft">{footer.statusLabel}</p>
+          <p class="footer__status type-p6">{footer.status}</p>
+        </div>
+      </div>
+      <div class="footer__scene" data-footer-scene>
+        <div class="footer__canvas">
+          <Scene scene={SCENES.footer} />
+        </div>
+      </div>
+      <div class="footer__legal theme-light">
+        <FooterLegal />
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    position: relative;
+    overflow: clip;
+  }
+
+  .footer__frame {
+    position: relative;
+  }
+
+  /* The content is a layer of its own, so that the scene can lie behind the text inside it. */
+  .footer__content {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-48);
+    padding-top: var(--space-136);
+  }
+
+  /* On a narrow screen the four columns stand in two rows of two. */
+  .footer__top {
+    row-gap: var(--space-32);
+  }
+
+  .footer__column {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .footer__links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .footer__link {
+    transition: opacity var(--duration-short) var(--ease-out);
+  }
+
+  .footer__link:hover {
+    opacity: var(--opacity-soft);
+  }
+
+  /* A dot in the accent marks the status as live. */
+  .footer__status::before {
+    content: "";
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.8em;
+    border-radius: var(--radius-round);
+    background: var(--color-accent);
+  }
+
+  /*
+   * The last row lies on the light part of the scene, so it takes the ink of the light theme. On a narrow
+   * screen it carries the light ground itself, from one edge of the screen to the other.
+   */
+  .footer__legal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    margin: calc(-1 * var(--space-48)) calc(-1 * var(--space-gutter)) 0;
+    padding: var(--space-24) var(--space-gutter) var(--space-16);
+    background: var(--ground);
+    text-align: center;
+  }
+
+  /* Without the scene, the light part is missing, and the last row lies on the dark ground like the rest. */
+  :global(:root[data-scenes="off"]) .footer__legal {
+    --ground: var(--color-dark);
+    --ink: var(--color-light);
+  }
+
+  @media (scripting: none) {
+    .footer__legal {
+      --ground: var(--color-dark);
+      --ink: var(--color-light);
+    }
+  }
+
+  /* On a narrow screen the scene is as wide as the screen. Its canvas is wider, and the screen shows its middle part. */
+  .footer__scene {
+    display: flex;
+    justify-content: center;
+    height: calc(6 * var(--cell));
+    margin-inline: calc(-1 * var(--space-gutter));
+  }
+
+  .footer__canvas {
+    flex: none;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  @media (min-width: 62rem) {
+    .footer__frame {
+      height: var(--screen);
+    }
+
+    .footer__content {
+      gap: 0;
+      height: 100%;
+    }
+
+    /*
+     * The pages and the legal pages stand at the left, the places to follow and the status at the right, so that
+     * the middle stays clear for the trophy.
+     */
+    .footer__column {
+      grid-column: span 2;
+    }
+
+    .footer__column:nth-child(3) {
+      grid-column: 9 / span 2;
+    }
+
+    .footer__column--status {
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    /* The copyright stands at the left, and the legal links stand in the true middle of the page. */
+    .footer__legal {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      justify-items: start;
+      margin: auto 0 0;
+      padding: 0 0 var(--space-16);
+      background: none;
+      text-align: left;
+    }
+
+    /* The scene fills the frame, behind the text. */
+    .footer__scene {
+      position: absolute;
+      z-index: -1;
+      inset: 0 calc(-1 * var(--space-gutter));
+      display: block;
+      height: auto;
+      margin: 0;
+    }
+
+    .footer__canvas {
+      width: 100%;
+      aspect-ratio: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer__link {
+      transition: none;
+    }
+  }
+</style>

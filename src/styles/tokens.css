@@ -1,0 +1,149 @@
+/*
+ * Design tokens. Components use these values and define no raw color or size of their own.
+ * The base colors (--color-orange, --color-cream, --color-coal, and the others) come from brand/palette.json.
+ * BaseLayout.astro writes them into the page.
+ *
+ * The layout follows a design that is 1440 pixels wide on a wide screen, and 384 pixels wide on a narrow
+ * screen. One unit is one pixel of that design, so every size grows with the width of the window.
+ * The wide layout starts at 62rem. A media query cannot read a custom property, so each component writes
+ * that value in its own media queries. A script reads it from --breakpoint-wide.
+ */
+:root {
+  --breakpoint-wide: 62rem;
+
+  --design-width: 384;
+  --unit: calc(100vw / var(--design-width));
+  /* The height of the screen. This height does not change when a phone shows or hides its bars. */
+  --screen: 100svh;
+
+  /* The two grounds of the page, and the accent. */
+  --color-light: var(--color-cream);
+  --color-dark: var(--color-coal);
+  --color-accent: var(--color-orange);
+
+  /* Space, in units. */
+  --space-2: calc(2 * var(--unit));
+  --space-4: calc(4 * var(--unit));
+  --space-8: calc(8 * var(--unit));
+  --space-12: calc(12 * var(--unit));
+  --space-16: calc(16 * var(--unit));
+  --space-24: calc(24 * var(--unit));
+  --space-32: calc(32 * var(--unit));
+  --space-40: calc(40 * var(--unit));
+  --space-48: calc(48 * var(--unit));
+  --space-136: calc(136 * var(--unit));
+  /* One column of the grid together with its gap. Large blocks measure their height in cells. */
+  --cell: calc(96 * var(--unit));
+
+  /* The grid. */
+  --grid-columns: 4;
+  --grid-column-gap: var(--space-32);
+  --grid-row-gap: var(--space-24);
+  --space-gutter: var(--space-16);
+
+  /* Size. */
+  --size-pill: var(--space-40);
+  --size-icon: var(--space-24);
+  --size-star-width: var(--space-8);
+  --size-star-height: var(--space-12);
+  --border-thin: 1px;
+  --border-thick: 2px;
+  --focus-ring: 3px;
+  --radius-round: 50%;
+
+  /*
+   * The menu floats at the top of the screen. It keeps fixed sizes in rem, like a set of buttons, so that it
+   * does not grow with the width of the window.
+   */
+  --size-menu-bar: 3.25rem;
+  --space-menu-top: 1.5rem;
+  --space-menu-side: 1rem;
+  --radius-pill: 100vw;
+
+  /* Type. A classic serif sets the headings, in capitals. A wide sans-serif sets the text, in capitals. */
+  --font-display: "EB Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: "Archivo Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* The commands and the hashes of the downloads page, in the monospace face of the system. */
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-weight-display: 500;
+  --font-weight-text: 500;
+  --font-stretch-text: 125%;
+  --tracking-display: -0.03em;
+  --tracking-text: 0.08em;
+
+  --type-h1: calc(96 * var(--unit));
+  --type-h3: calc(40 * var(--unit));
+  --type-h5: calc(24 * var(--unit));
+  --type-p1: calc(24 * var(--unit));
+  --type-p4: calc(12 * var(--unit));
+  --type-p5: calc(12 * var(--unit));
+  --type-p6: calc(10 * var(--unit));
+  --leading-h1: 0.8333;
+  --leading-h3: 0.8889;
+  --leading-h5: 1;
+  --leading-p1: 1.1667;
+  --leading-p4: 1.6667;
+  --leading-p5: 1.6667;
+  --leading-p6: 1.6;
+  /*
+   * A page that a user reads at length, such as a legal page, sets its text in ordinary case, in fixed sizes in
+   * rem, with a line no wider than a reader can follow.
+   */
+  --type-read: 1.0625rem;
+  --type-read-lead: 1.25rem;
+  --leading-read: 1.6;
+  --font-weight-read: 400;
+  --measure-read: 42rem;
+
+  /* A part under the pointer keeps this share of its ink. */
+  --opacity-soft: 0.5;
+
+  /* Layers. */
+  --layer-raised: 1;
+  --layer-over: 2;
+  --layer-menu: 10;
+
+  /* Motion in the styles. The scripts hold the values of their own animations. */
+  --duration-short: 0.4s;
+  --duration-medium: 0.6s;
+  --duration-long: 1.2s;
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+  /* A part that a script shows waits this long for the script. After the wait, the part shows without it. */
+  --duration-script-wait: 2.5s;
+}
+
+@media (min-width: 62rem) {
+  :root {
+    --design-width: 1440;
+    --grid-columns: 12;
+    --cell: calc(120 * var(--unit));
+
+    --type-h1: calc(144 * var(--unit));
+    --type-h3: calc(72 * var(--unit));
+    --type-h5: calc(40 * var(--unit));
+    --type-p1: calc(32 * var(--unit));
+    /* On a small wide screen, the unit is small. The small text keeps a size that a reader can read. */
+    --type-p4: max(calc(16 * var(--unit)), 0.75rem);
+    --type-p5: max(calc(12 * var(--unit)), 0.6875rem);
+    --type-p6: max(calc(10 * var(--unit)), 0.625rem);
+    --leading-p1: 1;
+    --leading-p4: 1.5;
+  }
+}
+
+/*
+ * A theme gives a part its ground and its ink. The light theme is the default of the page.
+ * The soft ink is a share of the ink, so each theme states it again.
+ */
+:root,
+.theme-light {
+  --ground: var(--color-light);
+  --ink: var(--color-dark);
+  --ink-soft: color-mix(in srgb, var(--color-dark) 50%, transparent);
+}
+
+.theme-dark {
+  --ground: var(--color-dark);
+  --ink: var(--color-light);
+  --ink-soft: color-mix(in srgb, var(--color-light) 50%, transparent);
+}

@@ -1,0 +1,82 @@
+---
+import "@fontsource-variable/archivo/wdth.css";
+import "@fontsource/eb-garamond/500.css";
+import "@fontsource/eb-garamond/700.css";
+import heroFontUrl from "@fontsource/eb-garamond/files/eb-garamond-latin-700-normal.woff2?url";
+import "lenis/dist/lenis.css";
+import "../styles/tokens.css";
+import "../styles/global.css";
+import { getImage } from "astro:assets";
+import palette from "@brand/palette.json";
+import { IMAGES } from "../assets/images.ts";
+import { SITE_NAME } from "../data/site.ts";
+
+interface Props {
+  title: string;
+  description: string;
+  socialImageAlt: string;
+}
+
+// A browser without support for an SVG icon takes the PNG icon. A tab shows it at this size on a dense screen.
+const ICON_SIZE_PX = 32;
+const TOUCH_ICON_SIZE_PX = 180;
+const SOCIAL_IMAGE_WIDTH_PX = 1200;
+const SOCIAL_IMAGE_HEIGHT_PX = 630;
+
+const { title, description, socialImageAlt } = Astro.props;
+
+// The palette file is the one definition site of the base colors. The tokens build on these properties.
+const paletteCss = `:root{${Object.entries(palette.colors)
+  .map(([name, value]) => `--color-${name}:${value}`)
+  .join(";")}}`;
+
+// The tab icon is round. The touch icon is square, because a phone cuts the icon to its own shape.
+const icon = await getImage({ src: IMAGES.iconRound, width: ICON_SIZE_PX, height: ICON_SIZE_PX, format: "png" });
+const touchIcon = await getImage({
+  src: IMAGES.iconSquare,
+  width: TOUCH_ICON_SIZE_PX,
+  height: TOUCH_ICON_SIZE_PX,
+  format: "png",
+});
+const socialImage = await getImage({
+  src: IMAGES.banner,
+  width: SOCIAL_IMAGE_WIDTH_PX,
+  height: SOCIAL_IMAGE_HEIGHT_PX,
+  fit: "cover",
+  format: "jpg",
+});
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+const socialImageUrl = new URL(socialImage.src, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={palette.colors.coal} />
+    <link rel="canonical" href={canonicalUrl} />
+    <!-- The title of the hero uses this font. The preload keeps the title from a visible change of font. -->
+    <link rel="preload" href={heroFontUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="icon" type="image/png" sizes={`${ICON_SIZE_PX}x${ICON_SIZE_PX}`} href={icon.src} />
+    <link rel="icon" type="image/svg+xml" href={IMAGES.iconRoundVector.src} />
+    <link rel="apple-touch-icon" href={touchIcon.src} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:width" content={String(SOCIAL_IMAGE_WIDTH_PX)} />
+    <meta property="og:image:height" content={String(SOCIAL_IMAGE_HEIGHT_PX)} />
+    <meta property="og:image:alt" content={socialImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style is:inline set:html={paletteCss}></style>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

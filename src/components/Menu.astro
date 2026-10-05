@@ -1,0 +1,489 @@
+---
+import { IMAGES } from "../assets/images.ts";
+import { COPY } from "../data/copy.ts";
+import { DOCS_HREF, DOWNLOADS_HREF, SOCIAL_LINKS, sectionHref } from "../data/site.ts";
+import SocialIcon from "./SocialIcon.astro";
+
+const PANEL_ID = "menu-panel";
+
+const { menu } = COPY;
+// The helmet of the brand, without a background, in its own colors: black ink, a white helmet, an orange crest.
+const logo = IMAGES.logo;
+const links = Object.entries(SOCIAL_LINKS) as [
+  keyof typeof SOCIAL_LINKS,
+  (typeof SOCIAL_LINKS)[keyof typeof SOCIAL_LINKS],
+][];
+---
+
+<!--
+  The menu floats at the top of the screen: the helmet of the brand, and a bar of glass with the menu button
+  and the main action, which opens the downloads page. The button opens a card below the bar with the sections
+  of the page and the outbound links as icons.
+  The script sets data-open on the root, and the styles move every part. Without a script, the menu button
+  hides, and the bar keeps the icon and the main action.
+-->
+<nav class="menu" aria-label={menu.label} style={`--menu-logo-ratio: ${logo.width / logo.height}`} data-menu>
+  <div class="menu__backdrop" data-menu-close></div>
+  <div class="menu__dock">
+    <div class="menu__bar">
+      <a class="menu__icon" href={sectionHref("top")} aria-label={menu.homeLabel} data-menu-link data-menu-icon>
+        <img src={logo.src} width={logo.width} height={logo.height} alt="" />
+      </a>
+      <div class="menu__pill">
+        <span class="menu__glass" aria-hidden="true"></span>
+        <span class="menu__fill" aria-hidden="true"></span>
+        <button class="menu__toggle" type="button" aria-expanded="false" aria-controls={PANEL_ID} data-menu-toggle>
+          <span class="menu__burger" aria-hidden="true">
+            <span class="menu__burger-line"></span>
+            <span class="menu__burger-line"></span>
+          </span>
+          {menu.toggle}
+        </button>
+        <a class="menu__action" href={DOWNLOADS_HREF} data-menu-action>
+          <span class="menu__action-ground" aria-hidden="true"></span>
+          <span class="menu__action-label">
+            <span class="menu__action-text" data-menu-action-text>
+              {menu.cta}
+            </span>
+            <span class="menu__action-text menu__action-text--copy" aria-hidden="true" data-menu-action-copy>
+              {menu.cta}
+            </span>
+          </span>
+        </a>
+      </div>
+    </div>
+    <div class="menu__panel" id={PANEL_ID} inert data-menu-panel>
+      <div class="menu__card">
+        <ul class="menu__list menu__list--sections">
+          {menu.sections.map((item) => (
+            <li class="menu__item">
+              <a class="menu__section" href={sectionHref(item.section)} data-menu-link>
+                {item.label}
+              </a>
+            </li>
+          ))}
+          <!-- A page of its own: the browser opens it, so the script of the sections leaves it alone. -->
+          <li class="menu__item">
+            <a class="menu__section" href={DOCS_HREF}>
+              {menu.docs}
+            </a>
+          </li>
+        </ul>
+        <ul class="menu__list menu__list--links">
+          {links.map(([name, link]) => (
+            <li>
+              <a class="menu__outbound" href={link.href} rel="noreferrer">
+                <SocialIcon name={name} />
+                <span class="visually-hidden">{link.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  import { initMenu } from "../scripts/motion/menu.ts";
+
+  initMenu();
+</script>
+
+<style>
+  /*
+   * The motion of the menu: one easing and five durations. Each part moves with a CSS transition when the
+   * root gets or loses data-open. A part that closes waits less than a part that opens.
+   */
+  .menu {
+    --menu-ease: cubic-bezier(0.65, 0, 0, 1);
+    --menu-time: 0.6s;
+    --menu-time-half: 0.3s;
+    --menu-time-quarter: 0.15s;
+    --menu-time-long: 0.9s;
+    --menu-time-color: 0.2s;
+    /* The card shows its sections after this delay, and its outbound links a little later. */
+    --menu-reveal-delay: 0.3s;
+    --menu-reveal-step: 0.075s;
+    /* The icon returns this long after the card starts to close. */
+    --menu-icon-delay: 0.05s;
+    --menu-width: 26rem;
+    --menu-gap: 0.5rem;
+    --menu-inset: 0.25rem;
+    --menu-radius: 1.5rem;
+    /*
+     * The bar is glass: a tint of the dark color over the page, with a blur behind it and light at its rim.
+     * The tint is dark enough that the light words keep their contrast over the light ground of the page.
+     */
+    --menu-glass: color-mix(in srgb, var(--color-dark) 72%, transparent);
+    --menu-blur: 0.5rem;
+    --menu-rim: color-mix(in srgb, var(--color-white) 80%, transparent);
+    --menu-rim-soft: color-mix(in srgb, var(--color-white) 45%, transparent);
+    --menu-glow: color-mix(in srgb, var(--color-white) 12%, transparent);
+    --menu-line: color-mix(in srgb, var(--color-dark) 10%, transparent);
+    --menu-quiet: color-mix(in srgb, var(--color-dark) 70%, transparent);
+    --menu-shade: color-mix(in srgb, var(--color-dark) 20%, transparent);
+    /* Under the pointer, the other items of a list fade to this share. */
+    --menu-fade: 0.4;
+    position: fixed;
+    inset: 0;
+    z-index: var(--layer-menu);
+    pointer-events: none;
+    /* The menu sets its words in ordinary case, like a set of buttons, not like the labels of the page. */
+    font-size: 1rem;
+    font-stretch: 100%;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
+  /* The page behind an open menu takes a light shade. A click on it closes the menu. */
+  .menu__backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--menu-shade);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: auto;
+    transition:
+      opacity var(--menu-time) var(--menu-ease),
+      visibility var(--menu-time) var(--menu-ease);
+  }
+
+  .menu[data-open] .menu__backdrop {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .menu__dock {
+    position: absolute;
+    inset: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-menu-top) var(--space-menu-side) 0;
+  }
+
+  .menu__panel,
+  .menu__bar {
+    width: min(100%, var(--menu-width));
+  }
+
+  /* The card grows down out of a thin line below the bar, and folds back into it. */
+  .menu__panel {
+    margin-top: var(--menu-gap);
+    border-radius: var(--menu-radius);
+    overflow: hidden;
+    transform: scale(0.7, 0);
+    transform-origin: 50% 0;
+    transition: transform var(--menu-time-half) var(--menu-ease) var(--menu-time-quarter);
+  }
+
+  .menu[data-open] .menu__panel {
+    transform: none;
+    pointer-events: auto;
+    transition: transform var(--menu-time) var(--menu-ease);
+  }
+
+  .menu__card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem 2rem;
+    background: var(--color-light);
+    color: var(--color-dark);
+  }
+
+  /* The lists fade in after the card has grown, and fade out at once when it closes. */
+  .menu__card > * {
+    opacity: 0;
+    transition: opacity var(--menu-time-quarter) var(--menu-ease);
+  }
+
+  .menu[data-open] .menu__card > * {
+    opacity: 1;
+    transition: opacity var(--menu-time-long) var(--menu-ease) var(--menu-reveal-delay);
+  }
+
+  .menu[data-open] .menu__card > :nth-child(2) {
+    transition-delay: calc(var(--menu-reveal-delay) + var(--menu-reveal-step));
+  }
+
+  .menu__item {
+    border-bottom: var(--border-thin) solid var(--menu-line);
+  }
+
+  .menu__section {
+    display: block;
+    padding-block: 1rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  .menu__list--links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-left: -0.625rem;
+  }
+
+  /* An outbound link is an icon in a round target, large enough for a finger. */
+  .menu__outbound {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--menu-quiet);
+  }
+
+  /* Under the pointer, the other items of the same list step back. */
+  @media (hover: hover) {
+    .menu__list > * {
+      transition: opacity var(--menu-time-quarter) var(--menu-ease);
+    }
+
+    .menu__list:has(> :hover) > :not(:hover) {
+      opacity: var(--menu-fade);
+    }
+  }
+
+  .menu__bar {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    height: var(--size-menu-bar);
+    pointer-events: auto;
+  }
+
+  /*
+   * The helmet is as high as the bar, and its width follows the shape of the drawing. It shrinks into its
+   * left edge while the menu opens, and the bar takes its place.
+   */
+  .menu__icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(var(--size-menu-bar) * var(--menu-logo-ratio));
+    height: 100%;
+    transform-origin: 0 50%;
+    transition: transform var(--menu-time) var(--menu-ease) var(--menu-icon-delay);
+  }
+
+  .menu[data-open] .menu__icon {
+    transform: scale(0);
+    transition-delay: 0s;
+  }
+
+  /* The helmet turns around a point near its chin. */
+  .menu__icon img {
+    width: 100%;
+    height: 100%;
+    transform-origin: 50% 90%;
+  }
+
+  /* Under the pointer, the helmet tilts to one side, swings a little past the middle, and comes to rest. */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .menu__icon:hover img {
+      animation: menu-icon-tilt calc(1.5 * var(--menu-time)) var(--menu-ease);
+    }
+  }
+
+  @keyframes menu-icon-tilt {
+    35% {
+      rotate: -10deg;
+    }
+
+    70% {
+      rotate: 4deg;
+    }
+  }
+
+  .menu__pill {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    width: calc(100% - var(--size-menu-bar) * var(--menu-logo-ratio) - var(--menu-gap));
+    height: 100%;
+    padding: var(--menu-inset);
+    border-radius: var(--radius-pill);
+    color: var(--color-light);
+    -webkit-backdrop-filter: blur(var(--menu-blur));
+    backdrop-filter: blur(var(--menu-blur));
+    transition:
+      width var(--menu-time) var(--menu-ease),
+      color var(--menu-time-color) ease;
+  }
+
+  .menu[data-open] .menu__pill {
+    width: 100%;
+    color: var(--color-dark);
+  }
+
+  .menu__glass,
+  .menu__fill {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .menu__glass {
+    background: var(--menu-glass);
+    box-shadow:
+      inset 0.28rem 0.28rem 0.1rem -0.33rem var(--menu-rim),
+      inset -0.28rem -0.28rem 0.1rem -0.33rem var(--menu-rim-soft),
+      inset 0 0 2rem var(--menu-glow);
+  }
+
+  /* An open menu turns the glass into the light color of the card. */
+  .menu__fill {
+    background: var(--color-light);
+    opacity: 0;
+    transition: opacity var(--menu-time-color) ease;
+  }
+
+  .menu[data-open] .menu__fill {
+    opacity: 1;
+  }
+
+  .menu__toggle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1rem;
+    border-radius: var(--radius-pill);
+    font-weight: 500;
+    transition:
+      gap var(--menu-time) var(--menu-ease),
+      box-shadow var(--menu-time-color) ease;
+  }
+
+  .menu[data-open] .menu__toggle {
+    gap: 0;
+  }
+
+  /* Under the pointer, a ring in the color of the words shows around the button. */
+  @media (hover: hover) {
+    .menu__toggle:hover {
+      box-shadow: inset 0 0 0 var(--border-thick) currentColor;
+    }
+  }
+
+  /* Two lines that turn into a small cross when the menu opens. */
+  .menu__burger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 0.3125rem;
+  }
+
+  .menu__burger-line {
+    position: absolute;
+    width: 100%;
+    height: 0.09375rem;
+    background: currentColor;
+    transform: translateY(0.15625rem);
+    transition: transform var(--menu-time) var(--menu-ease);
+  }
+
+  .menu__burger-line:last-child {
+    transform: translateY(-0.15625rem);
+  }
+
+  .menu[data-open] .menu__burger-line {
+    transform: rotate(-45deg) scaleX(0.6);
+  }
+
+  .menu[data-open] .menu__burger-line:last-child {
+    transform: rotate(45deg) scaleX(0.6);
+  }
+
+  /* The main action: dark words on the accent color, so that the words keep enough contrast. */
+  .menu__action {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 1.25rem;
+    border-radius: var(--radius-pill);
+    color: var(--color-dark);
+    font-weight: 500;
+  }
+
+  .menu__action-ground {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--color-accent);
+    transition: inset var(--menu-time) var(--menu-ease);
+  }
+
+  /* Under the pointer, the ground grows a little beyond the button. */
+  @media (hover: hover) {
+    .menu__action:hover .menu__action-ground {
+      inset: calc(-1 * var(--border-thick));
+    }
+  }
+
+  /* A window for the words. The script rolls the letters up out of it, and the copy rolls in from below. */
+  .menu__action-label {
+    position: relative;
+    display: block;
+    margin-block: -0.15em;
+    padding-block: 0.15em;
+    overflow: clip;
+  }
+
+  .menu__action-text {
+    display: block;
+  }
+
+  .menu__action-text--copy {
+    position: absolute;
+    inset: 0.15em 0 auto;
+  }
+
+  /* The bar comes down into place when the page loads. */
+  @media (prefers-reduced-motion: no-preference) {
+    .menu__bar {
+      animation: menu-enter calc(2 * var(--menu-time)) var(--menu-ease) var(--menu-time-half) both;
+    }
+  }
+
+  @keyframes menu-enter {
+    from {
+      translate: 0 calc(-100% - var(--space-menu-top));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu__backdrop,
+    .menu__panel,
+    .menu__card > *,
+    .menu__icon,
+    .menu__pill,
+    .menu__fill,
+    .menu__toggle,
+    .menu__burger-line,
+    .menu__action-ground,
+    .menu__list > * {
+      transition: none;
+    }
+  }
+
+  /* Without a script, the button cannot open the card, so it hides. */
+  @media (scripting: none) {
+    .menu__toggle {
+      display: none;
+    }
+
+    .menu__pill {
+      justify-content: flex-end;
+    }
+  }
+</style>

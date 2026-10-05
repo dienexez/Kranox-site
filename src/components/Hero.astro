@@ -1,0 +1,215 @@
+---
+import { COPY } from "../data/copy.ts";
+import { SCENES } from "../data/scenes.ts";
+import { SECTION_IDS } from "../data/site.ts";
+import HeroFigure from "./HeroFigure.astro";
+import Scene from "./Scene.astro";
+
+// While the user scrolls away, the figure falls behind the page and the text runs ahead, in percent of their height.
+const DEPTH = { figure: 12, text: -10 } as const;
+
+const { hero } = COPY;
+---
+
+<!--
+  The hero of the first site, by request of the owner on 3 Oct 2026, on a ground of parchment. The figure
+  stands in the center, and the text lies over its lower edge, where the figure fades. The title shows in
+  bars: the script draws each line in bars over the letters, and the letters turn clear. A band of bars at
+  the foot turns the light ground into the dark ground of the next section.
+-->
+<section class="hero" id={SECTION_IDS.top} data-hero>
+  <div class="hero__inner container">
+    <div class="hero__figure" data-depth={DEPTH.figure}>
+      <HeroFigure />
+    </div>
+    <div class="hero__text" data-depth={DEPTH.text}>
+      <h1 class="hero__title" data-hero-title>
+        <span class="hero__bars" aria-hidden="true">
+          <Scene scene={SCENES.heroTitle} />
+        </span>
+        {hero.titleLines.map((line) => (
+          <span class="hero__line" data-title-line>
+            {line}
+          </span>
+        ))}
+      </h1>
+      <p class="hero__lead" data-enter>
+        {hero.lead}
+      </p>
+    </div>
+  </div>
+  <div class="hero__fence">
+    <Scene scene={SCENES.fence} />
+  </div>
+</section>
+
+<style>
+  /*
+   * The sizes of the hero of the first site, in rem and in parts of the screen: the hero keeps its look on
+   * every screen. The figure starts a small gap below the menu, and the title starts on the figure, at a
+   * share of its height where the figure fades.
+   */
+  .hero {
+    --hero-ink: var(--color-dark);
+    --hero-ink-soft: color-mix(in srgb, var(--color-dark) 66%, var(--color-parchment));
+    --hero-title-size: clamp(3.25rem, 13vw, 6.5rem);
+    --hero-title-leading: 1.05;
+    --hero-lead-size: clamp(1.125rem, 1.5vw, 1.3125rem);
+    --hero-lead-leading: 1.6;
+    --hero-lead-width: 38rem;
+    --hero-gap: 1.5rem;
+    --hero-gap-large: 2rem;
+    /* The top of the helmet lies this far below the menu. */
+    --hero-figure-gap: 1rem;
+    /* The picture of the figure is empty above this share of its height: its drawing starts at row 35 of 800. */
+    --hero-figure-empty: 0.044;
+    /* The figure is at most this high, and the title starts at this share of its height. */
+    --hero-figure-height: min(34rem, 54svh);
+    --hero-title-at: 0.78;
+    /* The lines of the title stand side by side when they fit. The gap has the width of a space. */
+    --hero-word-gap: 0.25em;
+    background: var(--color-parchment);
+    color: var(--hero-ink);
+    /* The hero sets its words in ordinary case, like the first site, not in the capitals of the labels of the page. */
+    font-stretch: 100%;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
+  /* The box of the figure starts higher than the gap below the menu, by the empty top of its picture. */
+  .hero__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: calc(
+      var(--space-menu-top) + var(--size-menu-bar) + var(--hero-figure-gap) - var(--hero-figure-empty) *
+        var(--hero-figure-height)
+    );
+  }
+
+  .hero__figure {
+    --figure-max-height: var(--hero-figure-height);
+  }
+
+  /* The text lies above the figure. The pointer reaches the dots through the empty parts of the text block. */
+  .hero__text {
+    position: relative;
+    z-index: var(--layer-raised);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: calc((var(--hero-title-at) - 1) * var(--hero-figure-height));
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .hero__text > * {
+    pointer-events: auto;
+  }
+
+  /*
+   * The title. Two custom properties drive its entrance: how far the bars have grown, and how far the dot has
+   * come in. Without the entrance, for example with reduced motion, both are complete.
+   */
+  .hero__title {
+    --title-develop: 1;
+    --title-mark: 1;
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: var(--hero-word-gap);
+    font-family: var(--font-display);
+    font-size: var(--hero-title-size);
+    font-weight: 700;
+    line-height: var(--hero-title-leading);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  /* The canvas of the bars lies over the title, with room for the tails and the tops of the letters. */
+  .hero__bars {
+    position: absolute;
+    inset: -0.35em -0.2em;
+    pointer-events: none;
+  }
+
+  .hero__line {
+    display: block;
+  }
+
+  /* The dot stays a letter in the accent color. It grows into place at the end of the entrance. */
+  .hero__line:last-child::after {
+    content: ".";
+    display: inline-block;
+    color: var(--color-accent);
+    opacity: var(--title-mark);
+    scale: var(--title-mark);
+    transform-origin: 50% 80%;
+  }
+
+  /* When the bars show, the letters are clear. Assistive technology and search still read them. */
+  .hero__title[data-title-ready] .hero__line {
+    color: transparent;
+  }
+
+  /*
+   * Before the bars show, the letters stay hidden, so that they do not show and then turn into bars.
+   * global.css holds the keyframes. When the bars do not come, the letters show after the wait, and at once
+   * when the browser has no WebGL.
+   */
+  @media (scripting: enabled) {
+    .hero__title:not([data-title-ready]) .hero__line {
+      animation: wait-for-script 0s linear var(--duration-script-wait) both;
+    }
+  }
+
+  :global(:root[data-scenes="off"]) .hero__title .hero__line {
+    animation: none;
+  }
+
+  /* The lines of the lead have about the same length, so that no single word stands alone on the last line. */
+  .hero__lead {
+    max-width: var(--hero-lead-width);
+    margin-top: var(--hero-gap);
+    color: var(--hero-ink-soft);
+    font-size: var(--hero-lead-size);
+    font-weight: 400;
+    line-height: var(--hero-lead-leading);
+    text-wrap: balance;
+  }
+
+  .hero__fence {
+    height: calc(3 * var(--cell));
+    margin-top: var(--hero-gap-large);
+  }
+
+  /*
+   * On a wide screen, the figure takes the height that the menu, the text, and a room below the text leave
+   * on the first screen. The text counts one line of the title and one line of the lead. The title starts
+   * below the face, where the figure fades.
+   */
+  @media (min-width: 62rem) {
+    .hero {
+      --hero-title-size: clamp(4rem, 8vw, 7.75rem);
+      --hero-title-at: 0.66;
+      /*
+       * The room below the lead on the first screen. It keeps the size of the figure that the owner approved
+       * on 4 Oct 2026, when a row of two buttons still stood below the lead.
+       */
+      --hero-bottom-room: 7.75rem;
+      --hero-text-height: calc(
+        var(--hero-title-leading) * var(--hero-title-size) + var(--hero-gap) + var(--hero-lead-leading) *
+          var(--hero-lead-size)
+      );
+      --hero-figure-height: clamp(
+        30rem,
+        (
+            100svh - var(--space-menu-top) - var(--size-menu-bar) - var(--hero-figure-gap) - var(--hero-text-height) -
+              var(--hero-bottom-room)
+          ) /
+          (var(--hero-title-at) - var(--hero-figure-empty)),
+        56rem
+      );
+    }
+  }
+</style>

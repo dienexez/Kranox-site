@@ -1,0 +1,23 @@
+---
+import { COPY } from "../data/copy.ts";
+import type { LegalSlug } from "../data/site.ts";
+import LegalNav from "./LegalNav.astro";
+
+interface Props {
+  /** The legal page that the user reads, when the row lies on one. */
+  current?: LegalSlug;
+}
+
+const { current } = Astro.props;
+const { footer } = COPY;
+const year = new Date().getFullYear();
+---
+
+<!--
+  The last row of every page: the copyright and the links to the legal pages. The parent lays the two parts out:
+  on a wide screen the copyright at the left and the links in the true middle of the page.
+-->
+<p class="type-p6">
+  &copy; {year} {footer.copyright}
+</p>
+<LegalNav current={current} />

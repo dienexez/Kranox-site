@@ -1,0 +1,65 @@
+---
+import { LEGAL } from "../data/legal.ts";
+import { legalHref, type LegalSlug } from "../data/site.ts";
+
+interface Props {
+  /** The page that the user reads. Its link carries aria-current. */
+  current?: LegalSlug;
+  /** A column puts one link below the other, as in the side of a legal page. */
+  column?: boolean;
+}
+
+const { current, column = false } = Astro.props;
+---
+
+<!-- The links to the three legal pages, in the last row of the footer and in the side of each legal page. -->
+<nav class:list={["legal-nav", { "legal-nav--column": column }]} aria-label={LEGAL.navLabel}>
+  <ul class="legal-nav__list type-p6">
+    {LEGAL.pages.map((page) => (
+      <li>
+        <a
+          class="legal-nav__link"
+          href={legalHref(page.slug)}
+          aria-current={page.slug === current ? "page" : undefined}
+        >
+          {page.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .legal-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-4) var(--space-16);
+  }
+
+  .legal-nav--column .legal-nav__list {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* An underline, not a border, so that the links sit on the same line as the text beside them. */
+  .legal-nav__link {
+    text-decoration: underline var(--border-thin) transparent;
+    text-underline-offset: 0.4em;
+    transition: opacity var(--duration-short) var(--ease-out);
+  }
+
+  .legal-nav__link:hover {
+    opacity: var(--opacity-soft);
+  }
+
+  .legal-nav__link[aria-current="page"] {
+    text-decoration-color: currentColor;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .legal-nav__link {
+      transition: none;
+    }
+  }
+</style>

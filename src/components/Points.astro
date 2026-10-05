@@ -1,0 +1,51 @@
+---
+interface Props {
+  items: readonly string[];
+}
+
+const { items } = Astro.props;
+---
+
+<!-- Short points in pills, each with an orange dot. -->
+<ul class="points">
+  {items.map((item) => (
+    <li class="point">{item}</li>
+  ))}
+</ul>
+
+<style>
+  .points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    margin: var(--space-8) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* A pill of white on the light ground, with plain text, after the first site. */
+  .point {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding: 0.5rem 1rem;
+    background: color-mix(in srgb, #fff 72%, transparent);
+    border: var(--border-thin) solid color-mix(in srgb, var(--ink) 14%, transparent);
+    border-radius: var(--radius-pill);
+    font-size: 0.875rem;
+    font-stretch: normal;
+    font-weight: 600;
+    letter-spacing: normal;
+    line-height: 1.3;
+    text-transform: none;
+  }
+
+  .point::before {
+    content: "";
+    flex: none;
+    width: 0.5em;
+    height: 0.5em;
+    background: var(--color-accent);
+    border-radius: var(--radius-round);
+  }
+</style>

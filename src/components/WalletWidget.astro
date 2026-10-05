@@ -1,0 +1,421 @@
+---
+import { Image } from "astro:assets";
+import { IMAGES } from "../assets/images.ts";
+import type { WalletWidget } from "../data/copy.ts";
+
+interface Props {
+  widget: WalletWidget;
+}
+
+const { widget } = Astro.props;
+
+// The sync bar of the app: two rows of 24 dots, every dot reached, as in apps/wallet/lib/ui/theme/metrics.dart.
+const SYNC_DOTS = 48;
+// The password field shows this many dots.
+const PASSWORD_DOTS = 12;
+// The QR code shows at this width, and at twice it on a sharp screen.
+const QR_WIDTHS_PX = [112, 224];
+---
+
+<!--
+  A small piece of the app in its dark look, after the widgets of butter.video. The drawing beside it carries the
+  text alternative, so assistive technology skips the widget.
+-->
+<div class:list={["widget", `widget--${widget.kind}`]} aria-hidden="true">
+  {widget.kind === "unlock" && (
+    <>
+      <p class="widget__title">{widget.title}</p>
+      <p class="widget__soft">{widget.lead}</p>
+      <p class="widget__label">{widget.field}</p>
+      <p class="widget__field widget__field--secret">{"•".repeat(PASSWORD_DOTS)}</p>
+      <p class="widget__button widget__button--accent widget__button--wide">{widget.action}</p>
+      <p class="widget__note">{widget.note}</p>
+    </>
+  )}
+  {widget.kind === "receive" && (
+    <div class="widget__row">
+      <Image class="widget__qr" src={IMAGES.widgetReceiveQr} alt="" widths={QR_WIDTHS_PX} sizes="7rem" />
+      <div class="widget__stack">
+        <p class="widget__label">{widget.label}</p>
+        <p class="widget__address">{widget.address}</p>
+        <div class="widget__actions">
+          <p class="widget__button widget__button--accent">{widget.actions[0]}</p>
+          <p class="widget__button">{widget.actions[1]}</p>
+        </div>
+      </div>
+    </div>
+  )}
+  {widget.kind === "send" && (
+    <>
+      <p class="widget__title">{widget.title}</p>
+      <dl class="widget__lines">
+        {widget.rows.map(([name, value]) => (
+          <div class="widget__line">
+            <dt class="widget__soft">{name}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <div class="widget__actions">
+        <p class="widget__button widget__button--accent">{widget.actions[0]}</p>
+        <p class="widget__button">{widget.actions[1]}</p>
+      </div>
+    </>
+  )}
+  {widget.kind === "activity" && (
+    <>
+      <p class="widget__title">{widget.title}</p>
+      <ul class="widget__transfers">
+        {widget.rows.map((row) => (
+          <li class="widget__transfer">
+            <span class:list={["widget__arrow", { "widget__arrow--out": !row.incoming }]}>
+              {row.incoming ? "↓" : "↑"}
+            </span>
+            <span class="widget__stack">
+              <span>{row.title}</span>
+              <span class="widget__soft">{row.detail}</span>
+            </span>
+            <span class="widget__amount">
+              {row.amount}
+              <span class="widget__unit">{widget.unit}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+  {widget.kind === "node" && (
+    <>
+      <div class="widget__row widget__row--between">
+        <p class="widget__label">{widget.label}</p>
+        <p class="widget__chip">{widget.chip}</p>
+      </div>
+      <p class="widget__field">{widget.node}</p>
+      <div class="widget__row widget__row--between">
+        <p class="widget__strong">{widget.status}</p>
+        <p class="widget__strong">{widget.height}</p>
+      </div>
+      <p class="widget__sync">
+        {Array.from({ length: SYNC_DOTS }, () => (
+          <span class="widget__dot" />
+        ))}
+      </p>
+    </>
+  )}
+  {widget.kind === "bridge" && (
+    <>
+      <div class="widget__tabs">
+        <p class="widget__tab widget__tab--active">{widget.tabs[0]}</p>
+        <p class="widget__tab">{widget.tabs[1]}</p>
+      </div>
+      <div class="widget__legs">
+        <div class="widget__leg">
+          <p class="widget__label">{widget.from.label}</p>
+          <p class="widget__figure">
+            {widget.from.amount}
+            <span class="widget__unit">{widget.from.unit}</span>
+          </p>
+        </div>
+        <span class="widget__turn">↓</span>
+        <div class="widget__leg">
+          <div class="widget__row widget__row--between">
+            <p class="widget__label">{widget.to.label}</p>
+            <p class="widget__chip">{widget.to.chip}</p>
+          </div>
+          <p class="widget__figure">
+            {widget.to.amount}
+            <span class="widget__unit">{widget.to.unit}</span>
+          </p>
+        </div>
+      </div>
+    </>
+  )}
+</div>
+
+<style>
+  /* The colors of the dark look of the app: coal, cream, and the orange of the brand. */
+  .widget {
+    --widget-ground: #15120f;
+    --widget-raised: color-mix(in srgb, #f6f3ec 8%, #15120f);
+    --widget-line: color-mix(in srgb, #f6f3ec 12%, transparent);
+    --widget-ink: #f6f3ec;
+    --widget-soft: color-mix(in srgb, #f6f3ec 58%, transparent);
+    --widget-accent: var(--color-accent);
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    width: min(20rem, 78%);
+    padding: 1.125rem;
+    background: var(--widget-ground);
+    border: 1px solid var(--widget-line);
+    border-radius: 1.25rem;
+    box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 0.32);
+    color: var(--widget-ink);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-stretch: normal;
+    line-height: 1.35;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
+  .widget p,
+  .widget dl,
+  .widget dd,
+  .widget ul {
+    margin: 0;
+  }
+
+  .widget__title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  .widget__soft {
+    color: var(--widget-soft);
+    font-size: 0.75rem;
+  }
+
+  .widget__label {
+    color: var(--widget-soft);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .widget__strong {
+    font-weight: 600;
+  }
+
+  .widget__field {
+    padding: 0.625rem 0.75rem;
+    background: var(--widget-raised);
+    border: 1px solid var(--widget-line);
+    border-radius: 0.75rem;
+  }
+
+  .widget__field--secret {
+    letter-spacing: 0.08em;
+  }
+
+  .widget__button {
+    padding: 0.5rem 0.875rem;
+    background: var(--widget-raised);
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .widget__button--accent {
+    background: var(--widget-accent);
+    color: var(--widget-ground);
+  }
+
+  .widget__button--wide {
+    margin-top: 0.25rem;
+  }
+
+  .widget__note {
+    color: var(--widget-soft);
+    font-size: 0.6875rem;
+    text-align: center;
+  }
+
+  .widget__row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+
+  .widget__row--between {
+    justify-content: space-between;
+  }
+
+  .widget__stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .widget__qr {
+    flex: none;
+    width: 7rem;
+    height: auto;
+    border-radius: 0.625rem;
+  }
+
+  .widget__address {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .widget__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: 0.25rem;
+  }
+
+  .widget__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .widget__line {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .widget__line:last-child {
+    padding-top: 0.375rem;
+    border-top: 1px solid var(--widget-line);
+    font-weight: 600;
+  }
+
+  .widget__transfers {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    list-style: none;
+  }
+
+  .widget__transfer {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding-block: 0.5rem;
+    border-top: 1px solid var(--widget-line);
+  }
+
+  .widget__arrow {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    background: var(--widget-raised);
+    border-radius: 50%;
+  }
+
+  .widget__arrow--out {
+    background: var(--widget-accent);
+    color: var(--widget-ground);
+  }
+
+  .widget__transfer .widget__stack {
+    flex: 1;
+  }
+
+  .widget__amount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 0.875rem;
+  }
+
+  .widget__unit {
+    color: var(--widget-soft);
+    font-size: 0.625rem;
+    font-weight: 600;
+  }
+
+  .widget__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--widget-line);
+    border-radius: var(--radius-pill);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .widget__chip::before {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    background: var(--widget-accent);
+    border-radius: 50%;
+  }
+
+  .widget__sync {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 0.25rem;
+  }
+
+  .widget__dot {
+    aspect-ratio: 1;
+    background: var(--widget-accent);
+    border-radius: 50%;
+  }
+
+  /* The bridge: two tabs in one pill, then the amount that goes out and the amount that comes in. */
+  .widget__tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: var(--widget-raised);
+    border-radius: var(--radius-pill);
+  }
+
+  .widget__tab {
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-pill);
+    color: var(--widget-soft);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .widget__tab--active {
+    background: var(--widget-accent);
+    color: var(--widget-ground);
+  }
+
+  .widget__legs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .widget__leg {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    align-self: stretch;
+    padding: 0.625rem 0.75rem;
+    background: var(--widget-raised);
+    border: 1px solid var(--widget-line);
+    border-radius: 0.75rem;
+  }
+
+  .widget__figure {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  /* The arrow between the two amounts overlaps both, like the turn button of a swap form. */
+  .widget__turn {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-block: -0.5rem;
+    background: var(--widget-ground);
+    border: 1px solid var(--widget-line);
+    border-radius: 50%;
+  }
+</style>

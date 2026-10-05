@@ -1,0 +1,265 @@
+---
+import { DOCS } from "../../data/docs.ts";
+
+const { sidebar, groups } = DOCS;
+---
+
+<!--
+  The side of the docs, in the look of the home page: the search in a white pill, the names of the groups as small
+  labels in capitals, like the columns of the footer, the sections in plain words, and the network of the app at the
+  foot, like the status in the footer. The section in view takes the orange dot. On a wide screen the side stays in
+  view while the sections scroll, and its list scrolls on its own when it is taller than the screen. On a narrow
+  screen it stands above the sections.
+-->
+<div class="docs-side text-plain">
+  <div class="docs-search" role="search">
+    <svg
+      class="docs-search__icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="6.5"></circle>
+      <path d="m16 16 4.5 4.5"></path>
+    </svg>
+    <input
+      class="docs-search__input"
+      type="search"
+      placeholder={sidebar.searchPlaceholder}
+      aria-label={sidebar.searchLabel}
+      autocomplete="off"
+      spellcheck="false"
+      data-docs-search
+      data-shortcut-key={sidebar.shortcutKey}
+      data-shortcut-other={sidebar.shortcutOther}
+    />
+    <kbd class="docs-search__key" aria-hidden="true" data-docs-shortcut>
+      {sidebar.shortcutMac}
+    </kbd>
+  </div>
+  <nav class="docs-side__nav" aria-label={sidebar.label} data-docs-nav data-lenis-prevent>
+    {groups.map((group) => (
+      <div class="docs-side__group" data-docs-group>
+        <p class="docs-label">{group.label}</p>
+        <ul class="docs-side__list">
+          {group.sections.map((section) => (
+            <li class="docs-side__item">
+              <a class="docs-side__link" href={`#${section.id}`} data-docs-link>
+                {section.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+    <p class="docs-side__empty" role="status" hidden data-docs-empty>
+      {sidebar.noResults}
+    </p>
+  </nav>
+  <div class="docs-side__network">
+    <p class="docs-label">{sidebar.network.label}</p>
+    <p class="docs-label docs-side__value">{sidebar.network.value}</p>
+  </div>
+</div>
+
+<style>
+  .docs-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+  }
+
+  /* The search: a white pill like the points of the wallet features, with the icon and the key that focuses it. */
+  .docs-search {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--space-8);
+    height: var(--docs-size-control);
+    padding-inline: 1rem;
+    border: var(--border-thin) solid var(--docs-line);
+    border-radius: var(--radius-pill);
+    background: var(--docs-pill);
+    color: var(--docs-soft);
+  }
+
+  .docs-search:focus-within {
+    outline: var(--focus-ring) solid var(--color-accent);
+    outline-offset: var(--border-thin);
+  }
+
+  .docs-search__icon {
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .docs-search__input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--docs-type-small);
+    outline: none;
+  }
+
+  .docs-search__input::placeholder {
+    color: var(--docs-soft);
+    opacity: 1;
+  }
+
+  /* Escape clears the field, so the browser draws no button of its own for that. */
+  .docs-search__input::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .docs-search__key {
+    flex: none;
+    padding: 0.25rem 0.5rem;
+    border: var(--border-thin) solid var(--docs-line);
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  .docs-side__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+  }
+
+  .docs-side__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .docs-side__group[hidden],
+  .docs-side__item[hidden],
+  .docs-side__empty[hidden] {
+    display: none;
+  }
+
+  /*
+   * A link of the list, in plain words. The section in view takes the full ink and the orange dot of the status in
+   * the footer. Every link keeps the room of the dot, so that no word moves when the dot shows.
+   */
+  .docs-side__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding-block: 0.3125rem;
+    color: var(--docs-soft);
+    font-size: var(--docs-type-small);
+    line-height: 1.3;
+    transition: color var(--duration-short) var(--ease-out);
+  }
+
+  .docs-side__link::before {
+    content: "";
+    flex: none;
+    width: var(--docs-size-dot);
+    height: var(--docs-size-dot);
+    border-radius: var(--radius-round);
+    background: var(--color-accent);
+    opacity: 0;
+    transition: opacity var(--duration-short) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .docs-side__link:hover {
+      color: var(--ink);
+    }
+  }
+
+  .docs-side__link[aria-current] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .docs-side__link[aria-current]::before {
+    opacity: 1;
+  }
+
+  .docs-side__empty {
+    color: var(--docs-soft);
+    font-size: var(--docs-type-small);
+  }
+
+  /* The network of the app, like the status in the footer of the home page: a label, then the value with a dot. */
+  .docs-side__network {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .docs-side__value {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    color: var(--ink);
+  }
+
+  .docs-side__value::before {
+    content: "";
+    width: var(--docs-size-dot);
+    height: var(--docs-size-dot);
+    border-radius: var(--radius-round);
+    background: var(--color-accent);
+  }
+
+  /* Without a script, the search cannot work, so it hides. */
+  @media (scripting: none) {
+    .docs-search {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docs-side__link,
+    .docs-side__link::before {
+      transition: none;
+    }
+  }
+
+  /* On a middle screen the list takes two columns, so that the sections start sooner. */
+  @media (min-width: 40rem) and (max-width: 61.99rem) {
+    .docs-side__nav {
+      display: block;
+      columns: 2;
+      column-gap: var(--space-32);
+    }
+
+    .docs-side__group {
+      break-inside: avoid;
+      margin-bottom: var(--space-24);
+    }
+  }
+
+  /* On a wide screen the side stays in view, and its list scrolls on its own when the screen is short. */
+  @media (min-width: 62rem) {
+    .docs-side {
+      position: sticky;
+      top: var(--docs-top);
+      max-height: calc(var(--screen) - var(--docs-top) - var(--space-24));
+    }
+
+    /* The list fades out at its foot, so that a link cut by the edge reads as more to scroll. */
+    .docs-side__nav {
+      flex: 1;
+      min-height: 0;
+      padding-bottom: var(--docs-size-fade);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      mask-image: linear-gradient(to top, transparent, black var(--docs-size-fade));
+    }
+  }
+</style>

@@ -1,0 +1,247 @@
+/* Base styles and the few classes that every component shares. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Lenis scrolls the page with inertia. It sets this class, and then the browser must not smooth the scroll too. */
+html.lenis {
+  scroll-behavior: auto;
+}
+
+body {
+  margin: 0;
+  background: var(--color-light);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--type-p4);
+  font-stretch: var(--font-stretch-text);
+  font-weight: var(--font-weight-text);
+  line-height: var(--leading-p4);
+  letter-spacing: var(--tracking-text);
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+  font: inherit;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent);
+  outline-offset: var(--focus-ring);
+}
+
+/* A themed part takes its ink for the text. Its ground shows only when the part asks for it with .ground. */
+.theme-light,
+.theme-dark {
+  color: var(--ink);
+}
+
+.ground {
+  background: var(--ground);
+}
+
+.container {
+  padding-inline: var(--space-gutter);
+}
+
+/* The grid of the page: twelve columns on a wide screen, four on a narrow one. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  column-gap: var(--grid-column-gap);
+  row-gap: var(--grid-row-gap);
+  width: 100%;
+}
+
+/* The headings: a classic serif in capitals. */
+.type-h1,
+.type-h3,
+.type-h5 {
+  font-family: var(--font-display);
+  font-stretch: normal;
+  font-weight: var(--font-weight-display);
+  letter-spacing: var(--tracking-display);
+}
+
+.type-h1 {
+  font-size: var(--type-h1);
+  line-height: var(--leading-h1);
+}
+
+.type-h3 {
+  font-size: var(--type-h3);
+  line-height: var(--leading-h3);
+}
+
+.type-h5 {
+  font-size: var(--type-h5);
+  line-height: var(--leading-h5);
+}
+
+/* The text: a wide sans-serif in capitals. */
+.type-p1 {
+  font-size: var(--type-p1);
+  line-height: var(--leading-p1);
+}
+
+.type-p4 {
+  font-size: var(--type-p4);
+  line-height: var(--leading-p4);
+}
+
+.type-p5 {
+  font-size: var(--type-p5);
+  line-height: var(--leading-p5);
+}
+
+.type-p6 {
+  font-size: var(--type-p6);
+  line-height: var(--leading-p6);
+}
+
+.text-soft {
+  color: var(--ink-soft);
+}
+
+/*
+ * A wide part with room at its sides, for the wallet features and the note over the panorama: both share it, so
+ * that their edges line up. --inset-gap is the room between its two halves.
+ */
+.inset-wide {
+  --inset-gap: clamp(3rem, 6vw, 7rem);
+
+  max-width: 90rem;
+  margin-inline: auto;
+}
+
+@media (min-width: 62rem) {
+  .inset-wide {
+    padding-inline: clamp(1rem, 4vw, 5rem);
+  }
+}
+
+/*
+ * Plain text, after the first site: sentence case at the normal width, for the parts that explain the wallet. The
+ * rest of the page keeps the wide capitals.
+ */
+.text-plain {
+  font-stretch: normal;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.text-plain .type-h5 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* A part that shows on a wide screen only, and a part that shows on a narrow screen only. */
+@media not all and (min-width: 62rem) {
+  .wide-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 62rem) {
+  .narrow-only {
+    display: none !important;
+  }
+}
+
+/*
+ * Motion. A script shows the marked parts with an animation. Before the script starts, the parts stay
+ * hidden, so that they do not show and then jump. When the script does not start, the parts show after a wait.
+ * The script sets data-motion on the root element when it starts.
+ */
+@media (scripting: enabled) {
+  html:not([data-motion]) :is([data-reveal], [data-enter]) {
+    animation: wait-for-script 0s linear var(--duration-script-wait) both;
+  }
+}
+
+@keyframes wait-for-script {
+  from {
+    visibility: hidden;
+  }
+}
+
+/* The script splits a text into words, lines, or letters. Each piece moves on its own. */
+.split-word,
+.split-line,
+.split-char {
+  display: inline-block;
+  will-change: transform;
+}

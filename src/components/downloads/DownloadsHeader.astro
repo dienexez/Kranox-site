@@ -1,0 +1,180 @@
+---
+import { DOWNLOADS_COPY, DOWNLOADS_SECTION_IDS, isGroupShown } from "../../data/downloads.ts";
+import { SCENES } from "../../data/scenes.ts";
+import Scene from "../Scene.astro";
+import SectionLabel from "../SectionLabel.astro";
+
+const { label, title, lead, choice, groups } = DOWNLOADS_COPY;
+
+// The cards of the choice: one for each kind of device that the page shows, and one for the source code.
+const choices = [
+  ...Object.values(groups)
+    .filter((group) => isGroupShown(group.id))
+    .map((group) => ({
+      href: `#${DOWNLOADS_SECTION_IDS[group.id]}`,
+      label: group.label,
+      summary: group.summary,
+    })),
+  { href: `#${DOWNLOADS_SECTION_IDS.source}`, label: choice.source.label, summary: choice.source.summary },
+];
+---
+
+<!--
+  The top of the downloads page on the dark ground, between the two sentinels of the prologue of the home page:
+  the state of the release, the title, a few words, and the choice of download of getmonero.org/downloads as cards
+  that lead down the page. The title is the only text of the page in the serif; the owner asked for that on 5 Oct
+  2026.
+-->
+<header class="top theme-dark ground">
+  <div class="top__frame container">
+    <div class="top__content">
+      <SectionLabel text={label} />
+      <h1 class="top__title type-h1 text-center" data-reveal="words">
+        {title}
+      </h1>
+      <p class="top__lead text-plain text-center" data-reveal="lines">
+        {lead}
+      </p>
+      <nav class="top__choice" aria-labelledby="choice-heading" data-reveal="rise">
+        <h2 class="type-p6 text-soft text-center" id="choice-heading">
+          {choice.heading}
+        </h2>
+        <ul class="top__cards">
+          {choices.map((item) => (
+            <li>
+              <a class="top__card" href={item.href}>
+                <span class="top__label text-plain">{item.label}</span>
+                <span class="top__summary text-plain text-soft">{item.summary}</span>
+                <span class="top__arrow" aria-hidden="true">
+                  ↓
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <div class="top__scene wide-only">
+    <Scene scene={SCENES.prologue} />
+  </div>
+</header>
+
+<style>
+  .top {
+    position: relative;
+    overflow: clip;
+  }
+
+  .top__frame {
+    position: relative;
+    z-index: var(--layer-raised);
+  }
+
+  /* The content starts below the floating menu and stands in the middle, between the sentinels. */
+  .top__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-32);
+    padding-top: calc(var(--space-menu-top) + var(--size-menu-bar) + var(--space-48));
+    padding-bottom: var(--space-136);
+  }
+
+  /* The title is one long word, so a narrow screen sets it at the size of a section heading. */
+  .top__title {
+    font-size: var(--type-h3);
+    line-height: var(--leading-h3);
+  }
+
+  .top__lead {
+    max-width: var(--measure-read);
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+  }
+
+  .top__choice {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+    width: 100%;
+  }
+
+  .top__cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+
+  /* A card of the choice, in its middle: the name, its platforms, and an arrow that dips under the pointer. */
+  .top__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    height: 100%;
+    padding: var(--space-24);
+    background: color-mix(in srgb, var(--ink) 5%, transparent);
+    border: var(--border-thin) solid color-mix(in srgb, var(--ink) 12%, transparent);
+    border-radius: var(--space-24);
+    text-align: center;
+    transition: border-color var(--duration-short) var(--ease-out);
+  }
+
+  .top__card:hover {
+    border-color: var(--ink-soft);
+  }
+
+  .top__label {
+    font-size: var(--type-read-lead);
+    font-weight: 600;
+  }
+
+  .top__summary {
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+  }
+
+  .top__arrow {
+    margin-top: var(--space-8);
+    transition: transform var(--duration-short) var(--ease-out);
+  }
+
+  .top__card:hover .top__arrow {
+    transform: translateY(var(--space-4));
+  }
+
+  .top__scene {
+    position: absolute;
+    inset: 0;
+  }
+
+  @media (min-width: 62rem) {
+    .top__frame {
+      min-height: var(--screen);
+    }
+
+    .top__title {
+      font-size: var(--type-h1);
+      line-height: var(--leading-h1);
+    }
+
+    /* The choice stands between the sentinels, its cards in one row of equal columns. */
+    .top__choice {
+      max-width: calc(6 * var(--cell));
+    }
+
+    .top__cards {
+      grid-auto-columns: minmax(0, 1fr);
+      grid-auto-flow: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .top__card,
+    .top__arrow {
+      transition: none;
+    }
+  }
+</style>

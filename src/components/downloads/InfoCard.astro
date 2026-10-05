@@ -1,0 +1,67 @@
+---
+import type { ExternalLink } from "../../data/site.ts";
+import Card from "./Card.astro";
+import PartHeading from "./PartHeading.astro";
+
+interface Props {
+  id: string;
+  heading: string;
+  text: string;
+  links: readonly ExternalLink[];
+  /** A line that the reader must not miss, in a frame of the accent. */
+  warning?: string;
+}
+
+const { id, heading, text, links, warning } = Astro.props;
+---
+
+<!-- A short part of the downloads page: a heading, a few words, and the outbound links, in the middle of a card. -->
+<Card id={id}>
+  <PartHeading>{heading}</PartHeading>
+  <p class="info__text text-plain">{text}</p>
+  {warning !== undefined && <p class="info__warning text-plain">{warning}</p>}
+  <ul class="info__links">
+    {links.map((link) => (
+      <li>
+        <a class="info__link type-p6" href={link.href} rel="noreferrer">
+          {link.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</Card>
+
+<style>
+  .info__text,
+  .info__warning {
+    max-width: var(--measure-read);
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+  }
+
+  .info__warning {
+    padding: var(--space-12) var(--space-16);
+    border: var(--border-thin) solid color-mix(in srgb, var(--color-accent) 60%, transparent);
+    border-radius: var(--space-16);
+    font-weight: 600;
+  }
+
+  /* The links sit at the foot of the card, so that two cards side by side end on one line. */
+  .info__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-24);
+    margin-top: auto;
+  }
+
+  .info__link {
+    border-bottom: var(--border-thin) solid currentColor;
+    transition: opacity var(--duration-short) var(--ease-out);
+  }
+
+  .info__link:hover {
+    opacity: var(--opacity-soft);
+  }
+</style>

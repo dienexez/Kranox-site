@@ -1,0 +1,110 @@
+---
+import { DOWNLOADS_COPY, type Platform, RELEASE } from "../../data/downloads.ts";
+import PillButton from "../PillButton.astro";
+import StatusChip from "./StatusChip.astro";
+
+interface Props {
+  platforms: readonly Platform[];
+}
+
+const { platforms } = Astro.props;
+const { files } = DOWNLOADS_COPY;
+---
+
+<!--
+  The files of one group, after the block "Downloads" of getmonero.org: the current version, then one tile for each
+  platform, in the middle. A platform with a file of the current release shows a button. A platform without one
+  shows when it comes, so the page never offers a file that does not exist.
+-->
+<div class="files">
+  <div class="files__head">
+    <p class="type-p6 text-soft">{files.heading}</p>
+    {RELEASE === null ? (
+      <p class="files__version text-plain">{files.noRelease}</p>
+    ) : (
+      <p class="files__version text-plain">
+        {files.versionLabel} {RELEASE.version} ·{" "}
+        <a class="files__link" href={RELEASE.notesHref} rel="noreferrer">
+          {files.notes}
+        </a>
+      </p>
+    )}
+  </div>
+  <ul class="files__list">
+    {platforms.map((platform) => (
+      <li class="file">
+        <div class="file__name text-plain">
+          <p class="file__title">{platform.name}</p>
+          {platform.detail !== null && <p class="text-soft">{platform.detail}</p>}
+        </div>
+        {platform.file === null ? (
+          <StatusChip text={files.plans[platform.plan]} accent={platform.plan === "first"} />
+        ) : (
+          <PillButton href={platform.file.href} tone="accent" external>
+            {files.download}
+          </PillButton>
+        )}
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .files {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-16);
+    text-align: center;
+  }
+
+  .files__head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .files__version {
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+  }
+
+  .files__link {
+    border-bottom: var(--border-thin) solid currentColor;
+  }
+
+  /* The tiles wrap from the middle. Each tile is three cells wide at most. */
+  .files__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-12);
+    width: 100%;
+  }
+
+  /* A tile: the name of the platform in its own case, so that macOS reads right, its machines, then the state. */
+  .file {
+    display: flex;
+    flex: 0 1 calc(3 * var(--cell));
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-24);
+    padding: var(--space-24);
+    border: var(--border-thin) solid color-mix(in srgb, var(--ink) 12%, transparent);
+    border-radius: var(--space-16);
+  }
+
+  .file__name {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .file__title {
+    font-size: var(--type-read-lead);
+    font-weight: 600;
+  }
+</style>

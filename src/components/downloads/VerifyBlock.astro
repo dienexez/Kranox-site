@@ -1,0 +1,135 @@
+---
+import {
+  DOWNLOADS_COPY,
+  DOWNLOADS_SECTION_IDS,
+  RELEASE,
+  SHOWN_HASH_COMMANDS,
+  SHOWN_PLATFORMS,
+} from "../../data/downloads.ts";
+import Card from "./Card.astro";
+import PartHeading from "./PartHeading.astro";
+
+const { verify } = DOWNLOADS_COPY;
+// The hash of each file of the current release, with the name of its platform.
+const hashes = SHOWN_PLATFORMS.flatMap(({ name, file }) => (file === null ? [] : [{ name, sha256: file.sha256 }]));
+---
+
+<!--
+  How to check a file, after the part "Verify" of getmonero.org/downloads: why it matters, then, below a line, the
+  command that prints the hash of a file on each platform that the page shows, and the hashes of the current
+  release. Before the first release the page says that the hashes come with it, and shows none.
+-->
+<Card id={DOWNLOADS_SECTION_IDS.verify}>
+  <PartHeading>{verify.heading}</PartHeading>
+  {verify.paragraphs.map((paragraph) => (
+    <p class="verify__paragraph text-plain">{paragraph}</p>
+  ))}
+  <div class="verify__checks">
+    <div class="verify__block">
+      <p class="type-p6 text-soft">{verify.commandsLabel}</p>
+      <dl class="verify__rows text-plain">
+        {SHOWN_HASH_COMMANDS.map(({ system, command }) => (
+          <div class="verify__row">
+            <dt class="verify__system">{system}</dt>
+            <dd class="verify__value">
+              <code>{command}</code>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+    <div class="verify__block">
+      <p class="type-p6 text-soft">{verify.hashesLabel}</p>
+      {RELEASE === null ? (
+        <p class="verify__paragraph text-plain text-soft">{verify.noHashes}</p>
+      ) : (
+        <>
+          <dl class="verify__rows text-plain">
+            {hashes.map(({ name, sha256 }) => (
+              <div class="verify__row">
+                <dt class="verify__system">{name}</dt>
+                <dd class="verify__value">
+                  <code class="verify__hash">{sha256}</code>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <a class="verify__link type-p6" href={RELEASE.hashesHref} rel="noreferrer">
+            {verify.signedList}
+          </a>
+        </>
+      )}
+    </div>
+  </div>
+</Card>
+
+<style>
+  .verify__paragraph {
+    max-width: var(--measure-read);
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+  }
+
+  /* The checks stand below a thin line across the card. */
+  .verify__checks {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-24);
+    width: 100%;
+    padding-top: var(--space-24);
+    border-top: var(--border-thin) solid color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+
+  .verify__block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-8);
+    max-width: 100%;
+  }
+
+  .verify__rows {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-8);
+    max-width: 100%;
+    margin: 0;
+  }
+
+  /* One row for each platform: its name, then the command or the hash, side by side in the middle. */
+  .verify__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--space-4) var(--space-16);
+    max-width: 100%;
+  }
+
+  .verify__system {
+    font-weight: 600;
+  }
+
+  .verify__value {
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .verify__value code {
+    font-family: var(--font-mono);
+    font-size: var(--type-read);
+  }
+
+  /* A hash is one long word. It breaks anywhere, so that it never widens the page. */
+  .verify__hash {
+    overflow-wrap: anywhere;
+  }
+
+  .verify__link {
+    border-bottom: var(--border-thin) solid currentColor;
+  }
+</style>

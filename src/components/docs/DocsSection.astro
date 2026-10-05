@@ -1,0 +1,60 @@
+---
+import type { DocsSection } from "../../data/docs.ts";
+import DocsBlock from "./DocsBlock.astro";
+
+interface Props {
+  section: DocsSection;
+  /** The place of the section in the whole page, from 1. */
+  number: number;
+}
+
+// A section carries its number with two digits, such as 07, like a feature of the wallet on the home page.
+const NUMBER_DIGITS = 2;
+
+const { section, number } = Astro.props;
+const titleId = `${section.id}-title`;
+---
+
+<!--
+  One section of the docs, like a feature of the wallet on the home page: the number in orange, the title in the
+  serif, and the blocks in plain words. The list at the side links to its anchor and marks it while in view.
+-->
+<section class="docs-section" id={section.id} aria-labelledby={titleId} data-docs-section>
+  <p class="docs-section__number type-h5" aria-hidden="true">
+    {String(number).padStart(NUMBER_DIGITS, "0")}
+  </p>
+  <h2 class="docs-section__title type-h5" id={titleId}>
+    {section.title}
+  </h2>
+  <div class="docs-section__blocks">
+    {section.blocks.map((block) => (
+      <DocsBlock block={block} />
+    ))}
+  </div>
+</section>
+
+<style>
+  .docs-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+    /* A link to the section stops below the menu, which floats at the top of the screen. */
+    scroll-margin-top: var(--docs-top);
+  }
+
+  .docs-section__number {
+    color: var(--color-accent);
+  }
+
+  .docs-section__title {
+    font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+    line-height: 1.1;
+  }
+
+  .docs-section__blocks {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+    margin-top: var(--space-8);
+  }
+</style>

@@ -1,0 +1,189 @@
+---
+import type { GetStaticPaths } from "astro";
+import FooterLegal from "../components/FooterLegal.astro";
+import LegalNav from "../components/LegalNav.astro";
+import Menu from "../components/Menu.astro";
+import { COPY } from "../data/copy.ts";
+import { LEGAL, type LegalPage, legalPageTitle } from "../data/legal.ts";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+// One page for each legal text: /privacy, /disclosures, and /terms. legal.ts holds the text.
+export const getStaticPaths = (() =>
+  LEGAL.pages.map((page) => ({ params: { legal: page.slug }, props: { page } }))) satisfies GetStaticPaths;
+
+interface Props {
+  page: LegalPage;
+}
+
+const { page } = Astro.props;
+---
+
+<!--
+  A page of plain text on the light ground, under the same menu as the home page. On a wide screen the links
+  to the three legal pages stay in view at the side while the text scrolls. The text has no scene and no motion
+  but the smooth scroll.
+-->
+<BaseLayout title={legalPageTitle(page)} description={page.description} socialImageAlt={COPY.meta.socialImageAlt}>
+  <Menu />
+  <main class="legal theme-light ground container">
+    <div class="grid">
+      <aside class="legal__side">
+        <p class="type-p6 text-soft">{LEGAL.label}</p>
+        <LegalNav current={page.slug} column />
+      </aside>
+      <article class="legal__article">
+        <header class="legal__header">
+          <h1 class="type-h3">{page.title}</h1>
+          <p class="type-p6 text-soft">
+            {LEGAL.updatedLabel} {LEGAL.updated}
+          </p>
+        </header>
+        <div class="legal__text text-plain">
+          <p class="legal__lead">{page.lead}</p>
+          {page.sections.map((section) => (
+            <section class="legal__section">
+              <h2 class="legal__heading type-h5">{section.heading}</h2>
+              {section.paragraphs.map((paragraph) => (
+                <p>{paragraph}</p>
+              ))}
+              {section.points && (
+                <ul class="legal__points">
+                  {section.points.map((point) => (
+                    <li>{point}</li>
+                  ))}
+                </ul>
+              )}
+              {section.email && (
+                <p>
+                  <a class="legal__link" href={`mailto:${section.email}`}>
+                    {section.email}
+                  </a>
+                </p>
+              )}
+              {section.links?.map((link) => (
+                <p>
+                  <a class="legal__link" href={link.href} rel="noreferrer">
+                    {link.label}
+                  </a>
+                </p>
+              ))}
+            </section>
+          ))}
+        </div>
+      </article>
+    </div>
+  </main>
+  <footer class="legal-footer theme-light ground container">
+    <FooterLegal current={page.slug} />
+  </footer>
+  <script>
+    import { initTextMotion } from "../scripts/motion/index.ts";
+
+    initTextMotion();
+  </script>
+</BaseLayout>
+
+<style>
+  /* The text starts below the menu, which floats at the top of the screen. */
+  .legal {
+    padding-top: calc(var(--space-menu-top) + var(--size-menu-bar) + var(--space-48));
+    padding-bottom: var(--space-136);
+  }
+
+  .legal__side {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .legal__article {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-48);
+  }
+
+  .legal__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+  }
+
+  .legal__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-48);
+    max-width: var(--measure-read);
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+  }
+
+  .legal__lead {
+    font-size: var(--type-read-lead);
+    line-height: var(--leading-read);
+  }
+
+  .legal__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+  }
+
+  .legal__points {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    padding-left: 1.25em;
+    list-style: disc;
+  }
+
+  .legal__link {
+    border-bottom: var(--border-thin) solid currentColor;
+    transition: opacity var(--duration-short) var(--ease-out);
+  }
+
+  .legal__link:hover {
+    opacity: var(--opacity-soft);
+  }
+
+  /* The last row, as in the footer of the home page: on a narrow screen one part below the other. */
+  .legal-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-8);
+    padding-block: var(--space-24) var(--space-16);
+    border-top: var(--border-thin) solid var(--ink-soft);
+    text-align: center;
+  }
+
+  @media (min-width: 62rem) {
+    .legal__side {
+      grid-column: 1 / 4;
+      position: sticky;
+      top: calc(var(--space-menu-top) + var(--size-menu-bar) + var(--space-48));
+      align-self: start;
+    }
+
+    .legal__article {
+      grid-column: 5 / 12;
+    }
+
+    /* The copyright stands at the left, and the legal links stand in the true middle of the page. */
+    .legal-footer {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      justify-items: start;
+      text-align: left;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .legal__link {
+      transition: none;
+    }
+  }
+</style>

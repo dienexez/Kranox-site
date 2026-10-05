@@ -1,0 +1,113 @@
+---
+import { Image } from "astro:assets";
+import { IMAGES } from "../assets/images.ts";
+import { COPY } from "../data/copy.ts";
+import { SCENES } from "../data/scenes.ts";
+import { SECTION_IDS } from "../data/site.ts";
+import Scene from "./Scene.astro";
+
+// The picture of the desktop app shows wider than its place, so that it stays sharp.
+const APP_WIDTHS_PX = [480, 960, 1440];
+const APP_SIZES = "(min-width: 62rem) 48vw, 92vw";
+
+const { prologue } = COPY;
+---
+
+<!--
+  A statement on privacy on Monero between two sentinels, with no label above it. The letters of the
+  statement light up while the user scrolls. Assistive technology reads the name of the section as a heading.
+-->
+<section class="prologue theme-dark ground" id={SECTION_IDS.privacy}>
+  <div class="prologue__frame container">
+    <div class="prologue__grid grid">
+      <div class="prologue__content">
+        <h2 class="visually-hidden">{prologue.heading}</h2>
+        <!-- The script splits the statement into letters. Assistive technology reads the plain copy instead. -->
+        <p class="prologue__statement type-h5 text-center">
+          <span class="visually-hidden">{prologue.statement}</span>
+          <span class="prologue__letters" aria-hidden="true" data-reveal="words" data-highlight>
+            {prologue.statement}
+          </span>
+        </p>
+        <figure class="prologue__app" data-reveal="rise">
+          <Image src={IMAGES.appDesktopWallet} alt={prologue.app.alt} widths={APP_WIDTHS_PX} sizes={APP_SIZES} />
+        </figure>
+      </div>
+    </div>
+  </div>
+  <div class="prologue__scene wide-only" data-parallax="down">
+    <Scene scene={SCENES.prologue} />
+  </div>
+</section>
+
+<style>
+  /*
+   * The section lies over the next one: the feet of the sentinels reach below it, and they dissolve over the
+   * dark top of the sunrise, not under it.
+   */
+  .prologue {
+    position: relative;
+    z-index: var(--layer-raised);
+  }
+
+  .prologue__frame {
+    position: relative;
+    z-index: var(--layer-raised);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .prologue__grid {
+    flex: 1;
+  }
+
+  /*
+   * The statement starts soon after the band at the foot of the hero, level with the helmets of the
+   * sentinels, so that the dark after the hero never reads as an empty page. The sentinels fill the rest of
+   * the screen at the sides.
+   */
+  .prologue__content {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--space-32);
+    padding-block: var(--space-48);
+  }
+
+  .prologue__letters {
+    display: block;
+    text-wrap: pretty;
+  }
+
+  /*
+   * The picture of the desktop app fills the dark between the sentinels, below the statement. The section holds no
+   * button: on 5 Oct 2026 the owner removed "Read the docs", so that nothing in the middle of the page asks the user
+   * to stop scrolling and click. The menu and the footer link to the docs.
+   */
+  .prologue__app {
+    margin-top: var(--space-24);
+  }
+
+  .prologue__app :global(img) {
+    width: 100%;
+    height: auto;
+  }
+
+  /* The scene reaches one cell below the section, so that the sentinels stand on the start of the next section. */
+  .prologue__scene {
+    position: absolute;
+    inset: 0 0 calc(-1 * var(--cell));
+  }
+
+  @media (min-width: 62rem) {
+    /* The section is at least one screen high, and it grows with the picture of the app. */
+    .prologue__frame {
+      min-height: var(--screen);
+    }
+
+    .prologue__content {
+      grid-column: 4 / 10;
+    }
+  }
+</style>

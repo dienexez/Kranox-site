@@ -1,0 +1,422 @@
+---
+import type { DocsBlock } from "../../data/docs.ts";
+import CopyButton from "./CopyButton.astro";
+import DocsInline from "./DocsInline.astro";
+
+interface Props {
+  block: DocsBlock;
+}
+
+const { block } = Astro.props;
+
+// A step carries its number with two digits, such as 01, like a question on the home page.
+const STEP_DIGITS = 2;
+
+function stepNumber(index: number): string {
+  return String(index + 1).padStart(STEP_DIGITS, "0");
+}
+
+// A line of a code block that starts with this mark is a comment and shows in the soft ink. Each line is a block of
+// its own, so the markup holds no white space between them that a <pre> would show.
+const COMMENT_MARK = "#";
+
+const codeLines =
+  block.kind === "code" ? block.code.split("\n").map((text) => ({ text, comment: text.startsWith(COMMENT_MARK) })) : [];
+
+function isOutbound(href: string): boolean {
+  return /^https?:\/\//.test(href);
+}
+---
+
+<!--
+  One block of a section of the docs, in the parts of the home page: plain text; a list with orange dots, like the
+  pills of the wallet features; a note on white paper; numbered steps between thin lines, like the questions; terms;
+  facts and a table on white paper; and code in a dark widget of the app, with an orange pill that copies it.
+-->
+{block.kind === "text" && (
+  <p class="docs-text">
+    <DocsInline text={block.text} />
+  </p>
+)}
+{block.kind === "points" && (
+  <ul class="docs-points">
+    {block.items.map((item) => (
+      <li class="docs-points__item">
+        <DocsInline text={item} />
+      </li>
+    ))}
+  </ul>
+)}
+{block.kind === "callout" && (
+  <div class="docs-paper docs-callout">
+    <p class="docs-label docs-callout__title">{block.title}</p>
+    {block.text !== undefined && (
+      <p class="docs-callout__text">
+        <DocsInline text={block.text} />
+      </p>
+    )}
+    {block.items !== undefined && (
+      <ul class="docs-points">
+        {block.items.map((item) => (
+          <li class="docs-points__item">
+            <DocsInline text={item} />
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+)}
+{block.kind === "steps" && (
+  <ol class="docs-steps">
+    {block.items.map((step, index) => (
+      <li class="docs-steps__item">
+        <span class="docs-steps__number" aria-hidden="true">
+          {stepNumber(index)}
+        </span>
+        <div class="docs-steps__body">
+          <h3 class="docs-steps__title">{step.title}</h3>
+          <p class="docs-steps__text">
+            <DocsInline text={step.text} />
+          </p>
+        </div>
+      </li>
+    ))}
+  </ol>
+)}
+{block.kind === "terms" && (
+  <dl class="docs-terms">
+    {block.items.map((item) => (
+      <div class="docs-terms__item">
+        <dt class="docs-terms__term">{item.term}</dt>
+        <dd class="docs-terms__text">
+          <DocsInline text={item.text} />
+        </dd>
+      </div>
+    ))}
+  </dl>
+)}
+{block.kind === "facts" && (
+  <dl class="docs-paper docs-facts">
+    {block.items.map((fact) => (
+      <div class="docs-facts__row">
+        <dt class="docs-label">{fact.label}</dt>
+        <dd class="docs-facts__value">
+          {fact.copy === true ? (
+            <span class="docs-widget docs-facts__copy">
+              <code class="docs-facts__code">{fact.value}</code>
+              <CopyButton text={fact.value} />
+            </span>
+          ) : fact.href !== undefined ? (
+            <a class="docs-link" href={fact.href} rel={isOutbound(fact.href) ? "noreferrer" : undefined}>
+              {fact.value}
+            </a>
+          ) : (
+            fact.value
+          )}
+        </dd>
+      </div>
+    ))}
+  </dl>
+)}
+{block.kind === "table" && (
+  <div class="docs-paper docs-table">
+    <table>
+      <thead>
+        <tr>
+          {block.columns.map((column) => (
+            <th class="docs-label" scope="col">
+              {column}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {block.rows.map(([head, ...cells]) => (
+          <tr>
+            <th scope="row">{head}</th>
+            {cells.map((cell) => (
+              <td>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+{block.kind === "code" && (
+  <figure class="docs-widget docs-code">
+    <figcaption class="docs-code__bar">
+      <span class="docs-code__label">{block.title}</span>
+      <CopyButton text={block.code} />
+    </figcaption>
+    <pre
+      class="docs-code__pre"
+      tabindex="0"
+    ><code>{codeLines.map((line) => <span class:list={["docs-code__line", { "docs-code__line--comment": line.comment }]}>{line.text}</span>)}</code></pre>
+  </figure>
+)}
+{block.kind === "note" && (
+  <p class="docs-note">
+    <DocsInline text={block.text} />
+  </p>
+)}
+
+<style>
+  .docs-text,
+  .docs-note,
+  .docs-points {
+    max-width: var(--measure-read);
+    color: var(--docs-soft);
+  }
+
+  .docs-note {
+    font-size: var(--docs-type-small);
+  }
+
+  /* A list with the orange dot of the pills of the wallet features in place of a bullet. */
+  .docs-points {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .docs-points__item {
+    position: relative;
+    padding-left: 1.25em;
+  }
+
+  .docs-points__item::before {
+    content: "";
+    position: absolute;
+    top: calc((1lh - var(--docs-size-dot)) / 2);
+    left: 0.25em;
+    width: var(--docs-size-dot);
+    height: var(--docs-size-dot);
+    border-radius: var(--radius-round);
+    background: var(--color-accent);
+  }
+
+  /* White paper, like the panels of the drawings on the home page. */
+  .docs-paper {
+    border-radius: var(--docs-radius-paper);
+    background: var(--color-white);
+    box-shadow: var(--docs-shadow-paper);
+  }
+
+  .docs-callout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+    padding: var(--docs-pad-paper);
+  }
+
+  .docs-callout__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    color: var(--ink);
+  }
+
+  .docs-callout__title::before {
+    content: "";
+    width: var(--docs-size-dot);
+    height: var(--docs-size-dot);
+    border-radius: var(--radius-round);
+    background: var(--color-accent);
+  }
+
+  .docs-callout__text,
+  .docs-callout .docs-points {
+    max-width: none;
+    color: var(--docs-soft);
+  }
+
+  /* Numbered steps between thin lines, like the questions on the home page. */
+  .docs-steps {
+    border-top: var(--border-thin) solid var(--docs-line);
+  }
+
+  .docs-steps__item {
+    display: grid;
+    grid-template-columns: var(--docs-size-step) minmax(0, 1fr);
+    padding-block: var(--space-16);
+    border-bottom: var(--border-thin) solid var(--docs-line);
+  }
+
+  .docs-steps__number {
+    font-size: var(--docs-type-small);
+    font-stretch: var(--font-stretch-text);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-text);
+  }
+
+  .docs-steps__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .docs-steps__title {
+    font-weight: 600;
+  }
+
+  .docs-steps__text {
+    color: var(--docs-soft);
+  }
+
+  .docs-terms {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-16) var(--space-32);
+    margin: 0;
+  }
+
+  .docs-terms__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-top: var(--space-12);
+    border-top: var(--border-thin) solid var(--docs-line);
+  }
+
+  .docs-terms__term {
+    font-weight: 600;
+  }
+
+  .docs-terms__text {
+    margin: 0;
+    color: var(--docs-soft);
+  }
+
+  /* Rows of facts on the paper: the name as a label at the left, the value at the right. */
+  .docs-facts {
+    margin: 0;
+    padding: 0 var(--docs-pad-paper-inline);
+  }
+
+  .docs-facts__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4) var(--space-24);
+    align-items: center;
+    padding-block: var(--space-16);
+  }
+
+  .docs-facts__row + .docs-facts__row {
+    border-top: var(--border-thin) solid var(--docs-line);
+  }
+
+  .docs-facts__value {
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* A value to copy sits in a dark field of the app, with the orange pill beside it. */
+  .docs-facts__copy {
+    display: flex;
+    align-items: center;
+    gap: var(--space-12);
+    padding: 0.375rem 0.375rem 0.375rem 0.875rem;
+    border-radius: var(--radius-pill);
+  }
+
+  .docs-facts__code {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: var(--docs-type-code);
+    overflow-wrap: anywhere;
+  }
+
+  .docs-table {
+    overflow-x: auto;
+  }
+
+  .docs-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .docs-table th,
+  .docs-table td {
+    padding: var(--space-16) var(--docs-pad-paper-inline);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .docs-table tbody th {
+    font-weight: 600;
+  }
+
+  .docs-table td {
+    color: var(--docs-soft);
+  }
+
+  .docs-table tbody tr {
+    border-top: var(--border-thin) solid var(--docs-line);
+  }
+
+  /* A dark widget of the app, like the receive address on the home page. */
+  .docs-widget {
+    background: var(--docs-widget-ground);
+    color: var(--docs-widget-ink);
+  }
+
+  .docs-code {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+    margin: 0;
+    padding: 1.125rem;
+    border: var(--border-thin) solid var(--docs-widget-line);
+    border-radius: var(--docs-radius-widget);
+    box-shadow: var(--docs-shadow-widget);
+  }
+
+  .docs-code__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-12);
+  }
+
+  /* The name of the code, as the labels of a widget: small capitals in the soft ink. */
+  .docs-code__label {
+    color: var(--docs-widget-soft);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .docs-code__pre {
+    margin: 0;
+    padding: 0.875rem 1rem;
+    overflow-x: auto;
+    border: var(--border-thin) solid var(--docs-widget-line);
+    border-radius: var(--docs-radius-field);
+    background: var(--docs-widget-raised);
+    font-family: var(--font-mono);
+    font-size: var(--docs-type-code);
+    line-height: 1.7;
+  }
+
+  .docs-code__line {
+    display: block;
+    min-height: 1lh;
+  }
+
+  .docs-code__line--comment {
+    color: var(--docs-widget-soft);
+  }
+
+  @media (min-width: 40rem) {
+    .docs-terms {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .docs-facts__row {
+      grid-template-columns: var(--docs-size-fact-label) minmax(0, 1fr);
+    }
+  }
+</style>

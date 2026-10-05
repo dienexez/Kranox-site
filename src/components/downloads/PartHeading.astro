@@ -1,0 +1,28 @@
+---
+interface Props {
+  /** The words fly in when the heading does not sit inside a card that rises as a whole. */
+  reveal?: boolean;
+}
+
+const { reveal = false } = Astro.props;
+---
+
+<!--
+  A heading of the downloads page below its title, in the plain sans-serif of the text and in ordinary case. The
+  owner asked on 5 Oct 2026 for the serif on the title "Download" only.
+-->
+<h2 class="heading" data-reveal={reveal ? "words" : undefined}>
+  <slot />
+</h2>
+
+<style>
+  .heading {
+    font-family: var(--font-sans);
+    font-size: var(--type-h5);
+    font-stretch: normal;
+    font-weight: 600;
+    line-height: var(--leading-p1);
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+</style>

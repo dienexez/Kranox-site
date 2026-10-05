@@ -1,0 +1,238 @@
+---
+import { COPY } from "../data/copy.ts";
+import { SCENES } from "../data/scenes.ts";
+import { SECTION_IDS } from "../data/site.ts";
+import Scene from "./Scene.astro";
+
+const INDEX_DIGITS = 2;
+
+const { faq } = COPY;
+const [firstNote, secondNote] = faq.notes;
+---
+
+<!--
+  The three letters stay in view, and the list of questions moves up over them. Crows and arrows cross the
+  section in front of everything. The script closes the answers and opens one at a time.
+-->
+<section class="faq theme-dark ground" id={SECTION_IDS.faq}>
+  <h2 class="visually-hidden">{faq.heading}</h2>
+  <div class="faq__title container" aria-hidden="true">
+    <div class="grid">
+      <div class="faq__letters" data-reveal="words">
+        <span class="faq__letter type-h1">{faq.letters[0]}</span>
+        <span class="faq__note faq__note--low type-p6">{firstNote}</span>
+        <span class="faq__letter type-h1">{faq.letters[1]}</span>
+        <span class="faq__note faq__note--middle type-p6 text-center wide-only">{secondNote}</span>
+        <span class="faq__letter type-h1">{faq.letters[2]}</span>
+      </div>
+    </div>
+  </div>
+  <div class="faq__scene">
+    <Scene scene={SCENES.faq} />
+  </div>
+  <div class="faq__list ground container">
+    <div class="grid">
+      <ol class="faq__items" data-accordion>
+        {faq.items.map((item, index) => (
+          <li class="item" data-reveal="rise" data-accordion-item>
+            <h3 class="item__heading">
+              <button class="item__button" type="button" aria-expanded="true" data-accordion-button>
+                <span class="item__index type-p4" aria-hidden="true">
+                  {String(index + 1).padStart(INDEX_DIGITS, "0")}
+                </span>
+                <span class="item__question type-p4">{item.question}</span>
+                <span class="item__icon" aria-hidden="true" data-accordion-icon />
+              </button>
+            </h3>
+            <div class="item__panel" data-accordion-panel>
+              <p class="item__answer type-p6" data-accordion-text>
+                {item.answer}
+              </p>
+            </div>
+            <span class="item__line" aria-hidden="true" />
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  /*
+   * The questions start under the dark foot of the panorama, so that their letters follow the picture closely
+   * instead of after half a screen of empty dark. The owner asked for that on 5 Oct 2026.
+   */
+  .faq {
+    position: relative;
+    margin-top: calc(-0.3 * var(--screen));
+  }
+
+  .faq__title {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: var(--screen);
+  }
+
+  .faq__letters {
+    position: relative;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-16);
+    padding-right: var(--space-16);
+  }
+
+  .faq__note {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 12em;
+  }
+
+  /* On a narrow screen the first note stands below the letters. */
+  .faq__note--low {
+    position: absolute;
+    top: calc(100% + var(--space-32));
+    left: 0;
+  }
+
+  .faq__note--middle {
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* The scene stays in view like the letters, in front of the list. */
+  .faq__scene {
+    position: sticky;
+    top: 0;
+    z-index: var(--layer-over);
+    height: var(--screen);
+    margin-top: calc(-1 * var(--screen));
+    margin-bottom: calc(-1 * var(--space-136));
+    pointer-events: none;
+  }
+
+  .faq__list {
+    position: relative;
+    z-index: var(--layer-raised);
+    margin-top: calc(var(--space-136) + var(--space-32));
+    padding-bottom: var(--space-136);
+  }
+
+  .faq__items {
+    grid-column: 1 / -1;
+    border-top: var(--border-thin) solid var(--ink);
+  }
+
+  .item {
+    position: relative;
+  }
+
+  /* One row: the number, the question, and the sign. */
+  .item__button {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    column-gap: var(--grid-column-gap);
+    align-items: start;
+    width: 100%;
+    padding-block: var(--space-24);
+    text-align: left;
+  }
+
+  .item__index {
+    grid-column: 1;
+  }
+
+  .item__question {
+    grid-column: 2 / 8;
+  }
+
+  /* A plus sign. Its upright stroke turns flat when the answer is open, so that the sign is a minus sign. */
+  .item__icon {
+    position: relative;
+    grid-column: 8;
+    justify-self: end;
+    width: var(--size-icon);
+    height: var(--size-icon);
+  }
+
+  .item__icon::before,
+  .item__icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: var(--border-thin);
+    margin: auto;
+    background: currentColor;
+  }
+
+  /* The script turns the icon. Without the script, every answer is open and the sign is a minus sign. */
+  .item__icon::after {
+    rotate: var(--item-icon-turn, 0deg);
+  }
+
+  .item__panel {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    column-gap: var(--grid-column-gap);
+    overflow: hidden;
+  }
+
+  .item__answer {
+    grid-column: 2 / 8;
+    padding-bottom: var(--space-24);
+  }
+
+  /* Two lines close the row: a thin line, and a thick line that grows under the pointer. */
+  .item__line {
+    position: absolute;
+    inset: auto 0 0;
+    height: var(--border-thin);
+    background: var(--ink);
+  }
+
+  .item__line::after {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + var(--border-thick));
+    left: 0;
+    width: 0;
+    height: var(--border-thick);
+    background: var(--ink);
+    transition: width var(--duration-long) var(--ease-out);
+  }
+
+  .item:hover .item__line::after {
+    width: 100%;
+  }
+
+  @media (min-width: 62rem) {
+    .faq__letters {
+      grid-column: 3 / 11;
+    }
+
+    .faq__note--low {
+      position: static;
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+
+    .faq__items {
+      grid-column: 3 / 11;
+    }
+
+    .item__answer {
+      grid-column: 5 / 8;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .item__line::after {
+      transition: none;
+    }
+  }
+</style>
