@@ -3,6 +3,7 @@
 // On 3 Oct 2026 the owner asked for a site without content: the first goal was the look and the motion. On 4 Oct
 // 2026 the owner asked for the text after the sunrise. The owner approves the text before a deploy: the flag
 // CONTENT_APPROVED in site.ts. The names, the handle, and the tagline are facts of the brand.
+import { RELEASE } from "./downloads.ts";
 import { EXCHANGER, ORGANIZATION_NAME, SITE_NAME, X_HANDLE, type SectionId } from "./site.ts";
 
 export interface NavItem {
@@ -78,8 +79,8 @@ export interface BridgeCopy {
 }
 
 // What the wallet does, in plain words, one feature at a time beside a drawing and a widget of the app. The text
-// comes from the first site, without the features that the owner holds back, and says only what the app on 4 Oct
-// 2026 does.
+// comes from the first site, without the features that the owner holds back, and says only what the release 0.1.0 of
+// 5 Oct 2026 does.
 const WALLET_FEATURES: readonly WalletFeature[] = [
   {
     id: "hold",
@@ -102,6 +103,8 @@ const WALLET_FEATURES: readonly WalletFeature[] = [
     title: "A new address for every payer",
     text: "Share a fresh subaddress with each payer, as text or as a QR code, so that no two payers can tell that they paid the same wallet.",
     points: ["Fresh subaddress", "QR code", "Copy in one click"],
+    // The QR code beside this widget holds a stagenet subaddress of a throwaway wallet, on purpose: a sample on the
+    // site must never take real XMR. The text shows the same address.
     widget: {
       kind: "receive",
       label: "Subaddress #4",
@@ -151,12 +154,14 @@ const WALLET_FEATURES: readonly WalletFeature[] = [
     title: "Your own node",
     text: "Kranox talks to the node that you choose. Run your own for the most privacy, or pick one that you trust, and change it at any time.",
     points: ["Your own node", "Any node you trust", "Live sync"],
+    // The default node of mainnet in the release 0.1.0 (AppConfig.defaultNode), and the height of mainnet. CHECKED 5 Oct
+    // 2026, source get_info of that node: 3,777,437.
     widget: {
       kind: "node",
       label: "Node address",
-      node: "node3.monerodevs.org:38089",
+      node: "xmr-node.cakewallet.com:18081",
       status: "Synced",
-      height: "2,222,040",
+      height: "3,777,437",
       chip: "Node online",
     },
     imageAlt: "Ink drawing of a Spartan on watch beside a beacon at night, and the node and the sync of Kranox.",
@@ -165,31 +170,26 @@ const WALLET_FEATURES: readonly WalletFeature[] = [
 
 // The bridge, after the wallet, in the layout of the swap of Vizor: a title with "Powered by" and the logo of the
 // exchanger, a short text, and its points. On 5 Oct 2026 the owner asked for it with ChangeNOW, in the look of the
-// site, and confirmed the two directions: pay takes value out of XMR, receive brings it into XMR. The app does not
-// have the bridge yet, so it is "Coming". The text names no rate and no fee, because none is measured yet.
+// site, and confirmed the two directions: pay takes value out of XMR, receive brings it into XMR. The release 0.1.0
+// receives: ETH or USDG on Robinhood Chain into XMR, on the receive page of the app. Pay is not built, so the text
+// says that it comes next. The text names no rate and no fee, because none is measured yet.
 const BRIDGE_COPY: BridgeCopy = {
-  status: "Coming",
+  status: "Live",
   title: BRIDGE,
   poweredBy: "Powered by",
-  text: `Move between Monero and Robinhood Chain without leaving the wallet. Pay out of your ${XMR} to any Robinhood Chain address, or send ETH or USDG in and get ${XMR} back. ${EXCHANGER.label} handles the exchange.`,
-  points: [
-    "Pay out of XMR",
-    "Receive into XMR",
-    "ETH and USDG",
-    "Any Robinhood Chain address",
-    "Live quotes",
-    "Track status",
-  ],
-  // A sample payment out of XMR. The amount that comes out follows the prices of 5 Oct 2026 (CoinGecko: XMR
-  // 547.88 USD, ETH 2,727.50 USD), before the fee of the exchanger.
+  text: `Send ETH or USDG from Robinhood Chain and get ${XMR} in your wallet, right from the receive page. Paying out of your ${XMR} to a Robinhood Chain address comes next. ${EXCHANGER.label} handles the exchange.`,
+  points: ["Receive into XMR", "ETH and USDG", "Live quotes", "Track every step", "Refund address"],
+  // A sample swap into XMR, as the receive page of the app makes it: each swap pays into a new subaddress. The amount
+  // that comes in follows the prices of 5 Oct 2026 (CoinGecko: XMR 547.88 USD, ETH 2,727.50 USD), before the fee of
+  // the exchanger.
   widget: {
     kind: "bridge",
-    tabs: ["Pay", "Receive"],
-    from: { label: "You pay", amount: "0.25", unit: XMR },
-    to: { label: "You get", amount: "≈ 0.0502", unit: "ETH", chip: "Robinhood Chain" },
+    tabs: ["Receive", "Pay"],
+    from: { label: "You send", amount: "0.05", unit: "ETH" },
+    to: { label: "You get", amount: "≈ 0.2489", unit: XMR, chip: "New subaddress" },
   },
   imageAlt:
-    "Ink drawing of a Spartan who crosses a stone bridge over a gorge, and a concept of the bridge in Kranox: 0.25 XMR paid out as ETH on Robinhood Chain.",
+    "Ink drawing of a Spartan who crosses a stone bridge over a gorge, and the bridge in Kranox: 0.05 ETH sent from Robinhood Chain for about 0.2489 XMR.",
 };
 
 // The sections of the page, in the card of the menu.
@@ -201,12 +201,11 @@ const SECTIONS: readonly NavItem[] = [
 ];
 
 // The questions follow the doubts of a reader, the most common one first. They come from the first site, without
-// the features that the owner holds back, and with the state of the app on 4 Oct 2026.
+// the features that the owner holds back, and with the state of the release 0.1.0 of 5 Oct 2026.
 const FAQ_ITEMS = [
   {
     question: "Can I use Kranox today?",
-    answer:
-      "Not yet. Kranox is in development, and no build is out. The first build runs on macOS, on stagenet, the test network of Monero, where coins have no value.",
+    answer: `Yes, on a Mac. Version ${RELEASE.version} is out and runs on the Monero mainnet with real XMR. It's early software, so start with a small amount.`,
   },
   {
     question: "Who holds my keys?",
@@ -218,12 +217,12 @@ const FAQ_ITEMS = [
     answer: "No. Kranox uses the wallet code of the Monero project for keys, addresses, and transactions.",
   },
   {
-    question: "Will the code be public?",
-    answer: "Yes. Kranox Labs will publish the code on GitHub, so that anyone can read it and build it.",
+    question: "Is the code public?",
+    answer: "Yes. The code of the app is on GitHub, so anyone can read it and build it.",
   },
   {
-    question: "When does it ship?",
-    answer: `No date yet. Each part ships when it is solid. Follow ${X_HANDLE} on X to watch the build.`,
+    question: "What comes next?",
+    answer: `Paying out of XMR to Robinhood Chain is next. Each part ships when it is solid, so follow ${X_HANDLE} on X to watch the build.`,
   },
   {
     question: "Is Kranox part of the Monero project?",
@@ -234,7 +233,7 @@ const FAQ_ITEMS = [
 export const COPY = {
   meta: {
     title: SITE_NAME,
-    description: `${SITE_NAME} is a self-custodial app for Monero wallets, in development.`,
+    description: `${SITE_NAME} is a self-custodial Monero wallet. Version ${RELEASE.version} is out for the Mac.`,
     socialImageAlt:
       "Ink drawing of a Spartan hoplite who stands on a ridge in front of an orange sun. Arrows fill the sky. The shield carries the M of the Monero symbol.",
   },
@@ -269,10 +268,10 @@ export const COPY = {
     statement:
       "On a public chain, every payment stands alone in the open. Monero holds the line. Each payment hides among others: no sender, no receiver, no amount in sight.",
     // The owner asked on 4 Oct 2026 for the desktop app below the statement, without the phone, and then for no
-    // caption below it, and later for the picture of the real app with a large balance and activity. The
-    // alternative text says that the app is in development and that the data are samples.
+    // caption below it, and later for the picture of the real app with a large balance and activity. From 5 Oct 2026
+    // the picture shows the release 0.1.0 on mainnet. The alternative text says that the data are samples.
     app: {
-      alt: "The Kranox desktop app in development, with sample data: the home screen with the balance, the buttons Send and Receive, the receive address, and the recent activity, over a drawing of a Spartan treasury.",
+      alt: "The home screen of Kranox for Mac with sample data: the balance with its locked part, the coins that are unlocking, the receive address, and the recent activity, over a drawing of a Spartan treasury.",
     },
   },
   // The title answers the hero: the watchers keep the sun, and the user keeps the shade, with keys that never

@@ -68,6 +68,23 @@ export const DOCS_HREF = "/docs";
 // source changenow.io/press: the brand is written "ChangeNOW" only.
 export const EXCHANGER = { label: "ChangeNOW", href: "https://changenow.io" } as const satisfies ExternalLink;
 
+// The support, the privacy policy, and the terms of the exchanger, for the docs and the legal pages. CHECKED 5 Oct
+// 2026: the app names this mailbox (apps/wallet/lib/ui/copy.dart, from changenow.io/press and its API documentation),
+// and both pages answer 200.
+export const EXCHANGER_SUPPORT_EMAIL = "support@changenow.io";
+export const EXCHANGER_PRIVACY = {
+  label: "Privacy policy of ChangeNOW",
+  href: "https://changenow.io/privacy-policy",
+} as const satisfies ExternalLink;
+export const EXCHANGER_TERMS = {
+  label: "Terms of use of ChangeNOW",
+  href: "https://changenow.io/terms-of-use",
+} as const satisfies ExternalLink;
+
+// The relay of Kranox, which talks to the exchanger for the app, so that its key never sits in the app (apps/relay).
+// It runs from 5 Oct 2026 behind Cloudflare, and keeps no record of a request.
+export const RELAY_HOST = "relay.kranox.cash";
+
 // The owner chose the X handle on 2 Oct 2026.
 export const X_HANDLE = "@kranoxlabs";
 

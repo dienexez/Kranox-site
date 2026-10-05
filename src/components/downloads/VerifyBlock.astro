@@ -5,6 +5,7 @@ import {
   RELEASE,
   SHOWN_HASH_COMMANDS,
   SHOWN_PLATFORMS,
+  SIGNATURE_COMMANDS,
 } from "../../data/downloads.ts";
 import Card from "./Card.astro";
 import PartHeading from "./PartHeading.astro";
@@ -16,8 +17,8 @@ const hashes = SHOWN_PLATFORMS.flatMap(({ name, file }) => (file === null ? [] :
 
 <!--
   How to check a file, after the part "Verify" of getmonero.org/downloads: why it matters, then, below a line, the
-  command that prints the hash of a file on each platform that the page shows, and the hashes of the current
-  release. Before the first release the page says that the hashes come with it, and shows none.
+  command that prints the hash of a file on each platform that the page shows, the hashes of the current release with
+  the signed list, and how to check the signature of the list with the release key and its fingerprint.
 -->
 <Card id={DOWNLOADS_SECTION_IDS.verify}>
   <PartHeading>{verify.heading}</PartHeading>
@@ -40,25 +41,41 @@ const hashes = SHOWN_PLATFORMS.flatMap(({ name, file }) => (file === null ? [] :
     </div>
     <div class="verify__block">
       <p class="type-p6 text-soft">{verify.hashesLabel}</p>
-      {RELEASE === null ? (
-        <p class="verify__paragraph text-plain text-soft">{verify.noHashes}</p>
-      ) : (
-        <>
-          <dl class="verify__rows text-plain">
-            {hashes.map(({ name, sha256 }) => (
-              <div class="verify__row">
-                <dt class="verify__system">{name}</dt>
-                <dd class="verify__value">
-                  <code class="verify__hash">{sha256}</code>
-                </dd>
-              </div>
-            ))}
-          </dl>
-          <a class="verify__link type-p6" href={RELEASE.hashesHref} rel="noreferrer">
-            {verify.signedList}
-          </a>
-        </>
-      )}
+      <dl class="verify__rows text-plain">
+        {hashes.map(({ name, sha256 }) => (
+          <div class="verify__row">
+            <dt class="verify__system">{name}</dt>
+            <dd class="verify__value">
+              <code class="verify__hash">{sha256}</code>
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <a class="verify__link type-p6" href={RELEASE.hashesHref} rel="noreferrer">
+        {verify.signedList}
+      </a>
+    </div>
+    <div class="verify__block">
+      <p class="type-p6 text-soft">{verify.signatureLabel}</p>
+      <dl class="verify__rows text-plain">
+        {SIGNATURE_COMMANDS.map(({ step, command }) => (
+          <div class="verify__row">
+            <dt class="verify__system">{step}</dt>
+            <dd class="verify__value">
+              <code>{command}</code>
+            </dd>
+          </div>
+        ))}
+        <div class="verify__row">
+          <dt class="verify__system">{verify.fingerprintLabel}</dt>
+          <dd class="verify__value">
+            <code class="verify__hash">{RELEASE.keyFingerprint}</code>
+          </dd>
+        </div>
+      </dl>
+      <a class="verify__link type-p6" href={RELEASE.keyHref} rel="noreferrer">
+        {verify.key}
+      </a>
     </div>
   </div>
 </Card>

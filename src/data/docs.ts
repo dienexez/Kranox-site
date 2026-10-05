@@ -1,6 +1,6 @@
 // The text of the docs page: one page of sections with a list of them at the side. The layout follows
 // docs.ponsfamily.com, which the owner showed on 5 Oct 2026, and the look follows the home page, as the owner asked
-// the same day. Each fact about the app comes from the code of apps/wallet on 5 Oct 2026: the
+// the same day. Each fact about the app comes from the code of the release 0.1.0 of apps/wallet, 5 Oct 2026: the
 // values of lib/config/app_config.dart, the checks of lib/core/, and the words of the screens in lib/ui/copy.dart,
 // so that the page says only what the app does. The facts about Monero come from cryptonote_config.h of the
 // Monero project. The page names no feature that the owner holds back, and no platform but the Mac: on 5 Oct 2026 the
@@ -9,13 +9,17 @@
 // bans one word from every text. copy.ts holds the text of the home page.
 //
 // A text can carry two marks: `code` for a value that a user types or reads, and [label](href) for a link.
+import { DOWNLOADS_SECTION_IDS, RELEASE } from "./downloads.ts";
 import { LEGAL } from "./legal.ts";
 import {
   CONTACT_EMAIL,
   DOWNLOADS_HREF,
+  EXCHANGER,
+  EXCHANGER_SUPPORT_EMAIL,
   legalHref,
   type LegalSlug,
   ORGANIZATION_NAME,
+  RELAY_HOST,
   REPOSITORY,
   SITE_NAME,
   SOCIAL_LINKS,
@@ -73,6 +77,7 @@ const IDS = {
   restore: "restore",
   password: "password",
   receive: "receive",
+  receiveChain: "receive-from-robinhood-chain",
   send: "send",
   activity: "activity",
   node: "node",
@@ -97,10 +102,10 @@ function anchor(id: string): string {
   return `#${id}`;
 }
 
-// Values of the app, apps/wallet/lib/config/app_config.dart, 5 Oct 2026.
+// Values of the app, apps/wallet/lib/config/app_config.dart, in the release 0.1.0 of 5 Oct 2026.
 const APP = {
-  /** AppConfig.defaultNodes: the node of a new wallet on stagenet. */
-  defaultNode: "node3.monerodevs.org:38089",
+  /** AppConfig.defaultNode: the node of a new wallet on mainnet. */
+  defaultNode: "xmr-node.cakewallet.com:18081",
   /** AppConfig.minPasswordLength. */
   minPasswordLength: 8,
   /** AppConfig.autoRefreshInterval, in seconds. */
@@ -109,18 +114,22 @@ const APP = {
   decoys: 15,
   /** AppConfig.recentActivityCount. */
   recentCount: 5,
+  /** AppConfig.bridgeStatusInterval, in seconds: how often the app asks for the state of an open swap. */
+  swapCheckSeconds: 15,
 } as const;
 
 // Values of Monero. CHECKED 5 Oct 2026, source cryptonote_config.h on the branch master of monero-project/monero:
 // CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE, DIFFICULTY_TARGET_V2, CRYPTONOTE_DISPLAY_DECIMAL_POINT, and the RPC ports. The
-// first characters of the addresses follow from their prefixes, 18 and 42 on mainnet and 24 and 36 on stagenet,
-// checked with the base58 of Monero on the same date.
+// first characters of the addresses follow from their prefixes, 18 and 42 on mainnet, 24 and 36 on stagenet, and 53
+// and 63 on testnet, checked with the base58 of Monero on the same date: a testnet address starts with 9 or, about
+// one time in five, with A.
 const MONERO = {
   unlockBlocks: 10,
   blockMinutes: 2,
   decimals: 12,
   mainnetPort: 18081,
   stagenetPort: 38081,
+  testnetPort: 28081,
 } as const;
 
 const RING_SIZE = APP.decoys + 1;
@@ -155,7 +164,7 @@ const GETTING_STARTED: DocsGroup = {
           kind: "callout",
           title: "Before you start",
           items: [
-            `${SITE_NAME} is in development. The first build runs on macOS, on stagenet, where coins have no value.`,
+            `Version ${RELEASE.version} is out for macOS. It runs on the Monero mainnet with real XMR, so start with a small amount.`,
             "Your 25-word seed is the only backup of your wallet. Nobody can restore it for you.",
             "A Monero payment is final. Check the address before you send.",
           ],
@@ -168,19 +177,19 @@ const GETTING_STARTED: DocsGroup = {
       blocks: [
         {
           kind: "text",
-          text: "No build is out yet. We are testing the first one on macOS, on stagenet, the test network of Monero. Stagenet coins have no value, so a mistake costs nothing while the wallet gets its first real use.",
+          text: `${SITE_NAME} ${RELEASE.version}, the first release, came out on ${RELEASE.published} for macOS. It runs on the Monero mainnet, where coins are real XMR. It's early software and has seen little use with real money so far, so start with small amounts.`,
         },
         {
           kind: "facts",
           items: [
-            { label: "Stage", value: "In development" },
-            { label: "Platform", value: "macOS" },
-            { label: "Network", value: "Stagenet" },
+            { label: "Version", value: RELEASE.version, href: RELEASE.notesHref },
+            { label: "Platform", value: "macOS 12 or later, on Apple silicon and Intel" },
+            { label: "Network", value: "Mainnet, with stagenet and testnet in Settings" },
           ],
         },
         {
           kind: "text",
-          text: `Mainnet comes when sending and receiving have proven safe on stagenet. Next on the list are a privacy check before each send, Touch ID to unlock, and pay by name. Follow [${X_HANDLE}](${SOCIAL_LINKS.x.href}) on X to watch the build.`,
+          text: `Next on the list are paying out of XMR to Robinhood Chain, a privacy check before each send, Touch ID to unlock, and pay by name. Follow [${X_HANDLE}](${SOCIAL_LINKS.x.href}) on X to watch the build.`,
         },
       ],
     },
@@ -189,8 +198,25 @@ const GETTING_STARTED: DocsGroup = {
       title: "Install",
       blocks: [
         {
-          kind: "text",
-          text: `There is nothing to install yet. When a build is ready, you'll download it from the [downloads page](${DOWNLOADS_HREF}), next to the hash of each file, so that you can check a file before you open it.`,
+          kind: "steps",
+          items: [
+            {
+              title: "Download the disk image",
+              text: `Get ${SITE_NAME} for Mac from the [downloads page](${DOWNLOADS_HREF}). It runs on macOS 12 or later, on Apple silicon and Intel.`,
+            },
+            {
+              title: "Check the file",
+              text: `Compare its SHA-256 hash with the signed list of the release, as the [downloads page](${DOWNLOADS_HREF}${anchor(DOWNLOADS_SECTION_IDS.verify)}) shows.`,
+            },
+            {
+              title: "Move it to Applications",
+              text: `Open the disk image and drag ${SITE_NAME} into Applications.`,
+            },
+            {
+              title: "Open it the first time",
+              text: `Apple hasn't notarized ${SITE_NAME} yet, so macOS blocks the first start. Go to System Settings › Privacy & Security and click Open Anyway next to the message about ${SITE_NAME}. After that, it opens like any other app.`,
+            },
+          ],
         },
         {
           kind: "text",
@@ -309,7 +335,7 @@ const WALLET: DocsGroup = {
       blocks: [
         {
           kind: "text",
-          text: "Receive shows an address of your wallet as a QR code and as text. Copy it, or let the payer scan the code.",
+          text: `Receive shows an address of your wallet as a QR code and as text. Copy it, or let the payer scan the code. To pay in with ETH or USDG instead, see [Receive from Robinhood Chain](${anchor(IDS.receiveChain)}).`,
         },
         {
           kind: "text",
@@ -322,7 +348,51 @@ const WALLET: DocsGroup = {
         },
         {
           kind: "note",
-          text: `A payment shows up when the wallet has caught up with the chain. You can spend it after ${MONERO.unlockBlocks} confirmations, about ${UNLOCK_MINUTES} minutes.`,
+          text: `A payment shows up when the wallet has caught up with the chain. You can spend it after ${MONERO.unlockBlocks} confirmations, about ${UNLOCK_MINUTES} minutes. Until then, Home shows it as Unlocking, with its confirmations and about when it is ready.`,
+        },
+      ],
+    },
+    {
+      id: IDS.receiveChain,
+      title: "Receive from Robinhood Chain",
+      blocks: [
+        {
+          kind: "text",
+          text: `Pay in from Robinhood Chain: send ETH or USDG from another wallet, and ${EXCHANGER.label} turns it into XMR in a new subaddress of yours. This works on mainnet only.`,
+        },
+        {
+          kind: "steps",
+          items: [
+            {
+              title: "Pick the coin and the amount",
+              text: `On Receive, open From Robinhood Chain, choose ETH or USDG, and type the amount. ${SITE_NAME} asks ${EXCHANGER.label} for a live quote: about how much XMR you get, the least amount, and how long it usually takes.`,
+            },
+            {
+              title: "Add a refund address",
+              text: `This is optional. If the swap fails, ${EXCHANGER.label} sends your coins back to this Robinhood Chain address. Without one, a failed swap waits for its support.`,
+            },
+            {
+              title: "Get a deposit address",
+              text: `${SITE_NAME} makes a new subaddress and asks ${EXCHANGER.label} for a swap to it. You get a deposit address on Robinhood Chain, as text and as a QR code.`,
+            },
+            {
+              title: "Send exactly that amount",
+              text: "Send that amount of that coin on Robinhood Chain from your other wallet. Another coin, or the same coin on another chain, does not arrive.",
+            },
+            {
+              title: "Follow the swap",
+              text: `${SITE_NAME} checks the swap every ${APP.swapCheckSeconds} seconds and shows each step: your deposit, the exchange, and the XMR on its way. The XMR unlocks after ${MONERO.unlockBlocks} confirmations, about ${UNLOCK_MINUTES} minutes.`,
+            },
+          ],
+        },
+        {
+          kind: "callout",
+          title: "If a swap stops",
+          text: `${EXCHANGER.label} can hold a swap for a check, and a swap can fail or be refunded. Write to \`${EXCHANGER_SUPPORT_EMAIL}\` with the swap ID. ${ORGANIZATION_NAME} cannot release, refund, or speed up a swap.`,
+        },
+        {
+          kind: "note",
+          text: `${EXCHANGER.label} sees the amount, the time, the deposit, and the subaddress of a swap, never your keys. ${SITE_NAME} talks to it through the relay of ${SITE_NAME} at \`${RELAY_HOST}\`, which keeps no record of a swap.`,
         },
       ],
     },
@@ -354,7 +424,7 @@ const WALLET: DocsGroup = {
         },
         {
           kind: "text",
-          text: `You can send your unlocked balance only. Coins that arrived in the last ${MONERO.unlockBlocks} blocks wait for their confirmations first.`,
+          text: `You can send your unlocked balance only. New coins and the change of your own payments wait for ${MONERO.unlockBlocks} confirmations first, and Send shows how much is still locked and about when it is ready.`,
         },
       ],
     },
@@ -375,7 +445,7 @@ const WALLET: DocsGroup = {
             { term: "Failed", text: "The transaction never made it into a block, so no coins moved." },
             {
               term: "Confirmations",
-              text: `The number of blocks since the block with the payment. After ${MONERO.unlockBlocks}, the coins are unlocked.`,
+              text: `The number of blocks since the block with the payment. Until ${MONERO.unlockBlocks}, a ring around the arrow fills with each one, and a payment in says about when it is ready. After ${MONERO.unlockBlocks}, the coins are unlocked.`,
             },
             { term: "Copy ID", text: "Copies the transaction ID, the public name of a transaction on the chain." },
           ],
@@ -410,7 +480,7 @@ const NODE: DocsGroup = {
             { title: "Open Settings", text: "The Node card holds the address of the node in use." },
             {
               title: "Enter the address",
-              text: "Write it as host and port, such as `node.example.org:38089`. An IPv6 address goes in brackets.",
+              text: `Write it as host and port, such as \`node.example.org:${MONERO.mainnetPort}\`. An IPv6 address goes in brackets. Each network keeps its own node.`,
             },
             {
               title: "Save node",
@@ -441,16 +511,20 @@ const NODE: DocsGroup = {
         },
         {
           kind: "text",
-          text: `The node software of Monero is called monerod. Get it from the [downloads page of the Monero project](${MONERO_DOWNLOADS_HREF}), then start it for stagenet:`,
+          text: `The node software of Monero is called monerod. Get it from the [downloads page of the Monero project](${MONERO_DOWNLOADS_HREF}), then start it:`,
         },
         {
           kind: "code",
-          title: "Start a stagenet node",
-          code: "monerod --stagenet",
+          title: "Start a mainnet node",
+          code: "monerod",
         },
         {
           kind: "text",
-          text: `When it runs on the same computer as ${SITE_NAME}, enter \`127.0.0.1:${MONERO.stagenetPort}\` in Settings › Node. The first sync of a node takes hours, not minutes.`,
+          text: `When it runs on the same computer as ${SITE_NAME}, enter \`127.0.0.1:${MONERO.mainnetPort}\` in Settings › Node. The first sync of a node takes hours, not minutes.`,
+        },
+        {
+          kind: "note",
+          text: `For stagenet, start \`monerod --stagenet\` and enter \`127.0.0.1:${MONERO.stagenetPort}\`.`,
         },
       ],
     },
@@ -508,7 +582,8 @@ const PRIVACY: DocsGroup = {
           items: [
             "Your own node shows this to nobody else.",
             "A node that you trust is the next best choice.",
-            `The app sends nothing to ${ORGANIZATION_NAME}: no analytics, no crash reports, and no usage data.`,
+            `The app sends no analytics, no crash reports, and no usage data to ${ORGANIZATION_NAME}.`,
+            `The app talks to the relay of ${SITE_NAME} only to receive from Robinhood Chain, and to check that the relay answers when you open Settings. The relay keeps no record of a swap.`,
           ],
         },
       ],
@@ -545,17 +620,17 @@ const REFERENCE: DocsGroup = {
       blocks: [
         {
           kind: "text",
-          text: `Monero has a main network and test networks, each with its own addresses. ${SITE_NAME} refuses an address of another network than the wallet.`,
+          text: `Monero has a main network and two test networks, each with its own addresses. ${SITE_NAME} starts on mainnet. Settings › Network switches to a test network, and each network keeps its own wallet and its own node. ${SITE_NAME} refuses an address of another network than the wallet.`,
         },
         {
           kind: "table",
-          columns: ["", "Mainnet", "Stagenet"],
+          columns: ["", "Mainnet", "Stagenet", "Testnet"],
           rows: [
-            ["Coins", "Real XMR", "Test coins with no value"],
-            ["Address starts with", "4", "5"],
-            ["Subaddress starts with", "8", "7"],
-            ["Node port", String(MONERO.mainnetPort), String(MONERO.stagenetPort)],
-            [`In ${SITE_NAME}`, "Later", "Now"],
+            ["Coins", "Real XMR", "No value", "No value"],
+            ["Address starts with", "4", "5", "9 or A"],
+            ["Subaddress starts with", "8", "7", "B"],
+            ["Node port", String(MONERO.mainnetPort), String(MONERO.stagenetPort), String(MONERO.testnetPort)],
+            [`In ${SITE_NAME}`, "Default", "Settings", "Settings"],
           ],
         },
       ],
@@ -594,7 +669,7 @@ const REFERENCE: DocsGroup = {
         {
           kind: "points",
           items: [
-            "Leave the field empty to scan from the first block. Nothing is missed, but the first sync takes longer.",
+            "Leave the field empty to scan from the first block. Nothing is missed, but on mainnet the first sync can take hours.",
             "Enter the height of a block from a little before the day you made the wallet, to save time.",
             "A height that is too high skips your earliest payments. When in doubt, enter a lower number.",
           ],
@@ -615,13 +690,24 @@ const REFERENCE: DocsGroup = {
             { term: "Seed", text: "The 25 words that hold your keys. The last word is a checksum of the others." },
             {
               term: "Subaddress",
-              text: "An extra receive address of your wallet. It starts with 8 on mainnet and with 7 on stagenet.",
+              text: "An extra receive address of your wallet. It starts with 8 on mainnet, 7 on stagenet, and B on testnet.",
             },
             { term: "Node", text: "A computer that keeps the Monero chain and passes your payments on." },
             { term: "Confirmation", text: "One block on top of the block that holds your payment." },
             { term: "Unlocked balance", text: "The part of your balance that you can send now." },
             { term: "Restore height", text: "The block from which the wallet looks for your payments." },
-            { term: "Stagenet", text: "The test network of Monero. Its coins have no value." },
+            {
+              term: "Stagenet",
+              text: "A test network of Monero that follows the rules of mainnet. Its coins have no value.",
+            },
+            {
+              term: "Testnet",
+              text: "A test network of Monero for new rules before they come to mainnet. Its coins have no value.",
+            },
+            {
+              term: "Swap",
+              text: `An exchange of ETH or USDG on Robinhood Chain for XMR, made by ${EXCHANGER.label}.`,
+            },
             { term: "Transaction ID", text: "The public name of a transaction on the chain." },
           ],
         },
@@ -770,6 +856,7 @@ const PROJECT: DocsGroup = {
           kind: "facts",
           items: [
             { label: "Repository", value: REPOSITORY.code.label, href: REPOSITORY.code.href },
+            { label: "Latest release", value: `Version ${RELEASE.version}`, href: RELEASE.notesHref },
             { label: "Built with", value: "Flutter, and the wallet code of Monero through monero_c" },
             { label: "Bugs", value: REPOSITORY.issues.label, href: REPOSITORY.issues.href },
           ],
@@ -858,7 +945,7 @@ export const DOCS = {
     shortcutOther: "Ctrl K",
     noResults: "No section matches.",
     // The network of the app at the foot of the list, like the status in the footer of the home page.
-    network: { label: "Network", value: "Monero stagenet" },
+    network: { label: "Network", value: "Monero mainnet" },
   },
   copyButton: { label: "Copy", copied: "Copied", failed: "Copy failed" },
   groups: [GETTING_STARTED, WALLET, NODE, PRIVACY, REFERENCE, TOKEN_GROUP, PROJECT],

@@ -9,26 +9,26 @@ interface Props {
 
 const { platforms } = Astro.props;
 const { files } = DOWNLOADS_COPY;
+// How to install each file of the group, below its tiles.
+const installs = platforms.flatMap(({ id, file, install }) =>
+  file === null || install === null ? [] : [{ id, install }],
+);
 ---
 
 <!--
   The files of one group, after the block "Downloads" of getmonero.org: the current version, then one tile for each
-  platform, in the middle. A platform with a file of the current release shows a button. A platform without one
-  shows when it comes, so the page never offers a file that does not exist.
+  platform, in the middle, and how to install a file below them. A platform with a file of the current release shows
+  a button. A platform without one shows when it comes, so the page never offers a file that does not exist.
 -->
 <div class="files">
   <div class="files__head">
     <p class="type-p6 text-soft">{files.heading}</p>
-    {RELEASE === null ? (
-      <p class="files__version text-plain">{files.noRelease}</p>
-    ) : (
-      <p class="files__version text-plain">
-        {files.versionLabel} {RELEASE.version} ·{" "}
-        <a class="files__link" href={RELEASE.notesHref} rel="noreferrer">
-          {files.notes}
-        </a>
-      </p>
-    )}
+    <p class="files__version text-plain">
+      {files.versionLabel} {RELEASE.version} ·{" "}
+      <a class="files__link" href={RELEASE.notesHref} rel="noreferrer">
+        {files.notes}
+      </a>
+    </p>
   </div>
   <ul class="files__list">
     {platforms.map((platform) => (
@@ -47,6 +47,11 @@ const { files } = DOWNLOADS_COPY;
       </li>
     ))}
   </ul>
+  {installs.map(({ id, install }) => (
+    <p class="files__install text-plain" data-platform={id}>
+      {install}
+    </p>
+  ))}
 </div>
 
 <style>
@@ -73,6 +78,13 @@ const { files } = DOWNLOADS_COPY;
 
   .files__link {
     border-bottom: var(--border-thin) solid currentColor;
+  }
+
+  .files__install {
+    max-width: var(--measure-read);
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
   }
 
   /* The tiles wrap from the middle. Each tile is three cells wide at most. */
