@@ -79,8 +79,8 @@ export interface BridgeCopy {
 }
 
 // What the wallet does, in plain words, one feature at a time beside a drawing and a widget of the app. The text
-// comes from the first site, without the features that the owner holds back, and says only what the release 0.1.0 of
-// 5 Oct 2026 does.
+// comes from the first site, without the features that the owner holds back, and says only what the releases of 5 and
+// 6 Oct 2026 do.
 const WALLET_FEATURES: readonly WalletFeature[] = [
   {
     id: "hold",
@@ -171,14 +171,15 @@ const WALLET_FEATURES: readonly WalletFeature[] = [
 // The bridge, after the wallet, in the layout of the swap of Vizor: a title with "Powered by" and the logo of the
 // exchanger, a short text, and its points. On 5 Oct 2026 the owner asked for it with ChangeNOW, in the look of the
 // site, and confirmed the two directions: pay takes value out of XMR, receive brings it into XMR. The release 0.1.0
-// receives: ETH or USDG on Robinhood Chain into XMR, on the receive page of the app. Pay is not built, so the text
-// says that it comes next. The text names no rate and no fee, because none is measured yet.
+// receives: ETH or USDG on Robinhood Chain into XMR, on the receive page of the app. The release 0.2.0 of 6 Oct 2026
+// pays too: XMR into ETH or USDG for any address there, on the send page, at a fixed or a floating rate. The text
+// names no rate and no fee, because both change with the market.
 const BRIDGE_COPY: BridgeCopy = {
   status: "Live",
   title: BRIDGE,
   poweredBy: "Powered by",
-  text: `Send ETH or USDG from Robinhood Chain and get ${XMR} in your wallet, right from the receive page. Paying out of your ${XMR} to a Robinhood Chain address comes next. ${EXCHANGER.label} handles the exchange.`,
-  points: ["Receive into XMR", "ETH and USDG", "Live quotes", "Track every step", "Refund address"],
+  text: `Pay any Robinhood Chain address in ETH or USDG straight from your ${XMR}, or send ETH or USDG from Robinhood Chain and get ${XMR} in your wallet. ${EXCHANGER.label} handles the exchange.`,
+  points: ["Pay out of XMR", "Receive into XMR", "ETH and USDG", "Fixed or floating rate", "Track every step"],
   // A sample swap into XMR, as the receive page of the app makes it: each swap pays into a new subaddress. The amount
   // that comes in follows the prices of 5 Oct 2026 (CoinGecko: XMR 547.88 USD, ETH 2,727.50 USD), before the fee of
   // the exchanger.
@@ -201,7 +202,8 @@ const SECTIONS: readonly NavItem[] = [
 ];
 
 // The questions follow the doubts of a reader, the most common one first. They come from the first site, without
-// the features that the owner holds back, and with the state of the release 0.1.0 of 5 Oct 2026.
+// the features that the owner holds back, and with the state of the release 0.2.0 of 6 Oct 2026. What comes next names
+// only the parts that the docs already name.
 const FAQ_ITEMS = [
   {
     question: "Can I use Kranox today?",
@@ -222,7 +224,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "What comes next?",
-    answer: `Paying out of XMR to Robinhood Chain is next. Each part ships when it is solid, so follow ${X_HANDLE} on X to watch the build.`,
+    answer: `A privacy check before each send, Touch ID to unlock, and pay by name. Each part ships when it is solid, so follow ${X_HANDLE} on X to watch the build.`,
   },
   {
     question: "Is Kranox part of the Monero project?",

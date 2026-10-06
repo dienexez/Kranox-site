@@ -1,6 +1,6 @@
 // The text of the docs page: one page of sections with a list of them at the side. The layout follows
 // docs.ponsfamily.com, which the owner showed on 5 Oct 2026, and the look follows the home page, as the owner asked
-// the same day. Each fact about the app comes from the code of the release 0.1.0 of apps/wallet, 5 Oct 2026: the
+// the same day. Each fact about the app comes from the code of the release 0.2.0 of apps/wallet, 6 Oct 2026: the
 // values of lib/config/app_config.dart, the checks of lib/core/, and the words of the screens in lib/ui/copy.dart,
 // so that the page says only what the app does. The facts about Monero come from cryptonote_config.h of the
 // Monero project. The page names no feature that the owner holds back, and no platform but the Mac: on 5 Oct 2026 the
@@ -79,6 +79,7 @@ const IDS = {
   receive: "receive",
   receiveChain: "receive-from-robinhood-chain",
   send: "send",
+  payChain: "pay-to-robinhood-chain",
   activity: "activity",
   node: "node",
   ownNode: "own-node",
@@ -102,7 +103,7 @@ function anchor(id: string): string {
   return `#${id}`;
 }
 
-// Values of the app, apps/wallet/lib/config/app_config.dart, in the release 0.1.0 of 5 Oct 2026.
+// Values of the app, apps/wallet/lib/config/app_config.dart, in the release 0.2.0 of 6 Oct 2026.
 const APP = {
   /** AppConfig.defaultNode: the node of a new wallet on mainnet. */
   defaultNode: "xmr-node.cakewallet.com:18081",
@@ -116,6 +117,8 @@ const APP = {
   recentCount: 5,
   /** AppConfig.bridgeStatusInterval, in seconds: how often the app asks for the state of an open swap. */
   swapCheckSeconds: 15,
+  /** AppConfig.exchangerXmrConfirmations: the confirmations of Monero after which ChangeNOW takes in the XMR, about. */
+  exchangerConfirmations: 6,
 } as const;
 
 // Values of Monero. CHECKED 5 Oct 2026, source cryptonote_config.h on the branch master of monero-project/monero:
@@ -177,7 +180,7 @@ const GETTING_STARTED: DocsGroup = {
       blocks: [
         {
           kind: "text",
-          text: `${SITE_NAME} ${RELEASE.version}, the first release, came out on ${RELEASE.published} for macOS. It runs on the Monero mainnet, where coins are real XMR. It's early software and has seen little use with real money so far, so start with small amounts.`,
+          text: `${SITE_NAME} ${RELEASE.version} came out on ${RELEASE.published} for macOS. It runs on the Monero mainnet, where coins are real XMR, and it can pay any address on Robinhood Chain from your XMR. It's early software and has seen little use with real money so far, so start with small amounts.`,
         },
         {
           kind: "facts",
@@ -189,7 +192,7 @@ const GETTING_STARTED: DocsGroup = {
         },
         {
           kind: "text",
-          text: `Next on the list are paying out of XMR to Robinhood Chain, a privacy check before each send, Touch ID to unlock, and pay by name. Follow [${X_HANDLE}](${SOCIAL_LINKS.x.href}) on X to watch the build.`,
+          text: `Next on the list are a privacy check before each send, Touch ID to unlock, and pay by name. Follow [${X_HANDLE}](${SOCIAL_LINKS.x.href}) on X to watch the build.`,
         },
       ],
     },
@@ -365,7 +368,7 @@ const WALLET: DocsGroup = {
           items: [
             {
               title: "Pick the coin and the amount",
-              text: `On Receive, open From Robinhood Chain, choose ETH or USDG, and type the amount. ${SITE_NAME} asks ${EXCHANGER.label} for a live quote: about how much XMR you get, the least amount, and how long it usually takes.`,
+              text: `On Receive, open From Robinhood Chain. Under You send, type the amount and choose ETH or USDG from the menu. ${SITE_NAME} asks ${EXCHANGER.label} for a live quote: about how much XMR you get and how long it usually takes. The minimum shows below the amount.`,
             },
             {
               title: "Add a refund address",
@@ -381,7 +384,7 @@ const WALLET: DocsGroup = {
             },
             {
               title: "Follow the swap",
-              text: `${SITE_NAME} checks the swap every ${APP.swapCheckSeconds} seconds and shows each step: your deposit, the exchange, and the XMR on its way. The XMR unlocks after ${MONERO.unlockBlocks} confirmations, about ${UNLOCK_MINUTES} minutes.`,
+              text: `${SITE_NAME} checks the swap every ${APP.swapCheckSeconds} seconds and shows each step and when it last checked: your deposit, the exchange, and the XMR on its way. You can close the app, and the card catches up when you open it again. The XMR unlocks after ${MONERO.unlockBlocks} confirmations, about ${UNLOCK_MINUTES} minutes.`,
             },
           ],
         },
@@ -425,6 +428,50 @@ const WALLET: DocsGroup = {
         {
           kind: "text",
           text: `You can send your unlocked balance only. New coins and the change of your own payments wait for ${MONERO.unlockBlocks} confirmations first, and Send shows how much is still locked and about when it is ready.`,
+        },
+      ],
+    },
+    {
+      id: IDS.payChain,
+      title: "Pay to Robinhood Chain",
+      blocks: [
+        {
+          kind: "text",
+          text: `Pay any address on Robinhood Chain in ETH or USDG, straight from your XMR. ${EXCHANGER.label} takes your XMR and sends the coin to the recipient. This works on mainnet only.`,
+        },
+        {
+          kind: "steps",
+          items: [
+            {
+              title: "Type the XMR to pay",
+              text: "On Send, open To Robinhood Chain and type how much XMR to pay. The minimum shows below it before you type, with your unlocked balance.",
+            },
+            {
+              title: "Pick the coin and the rate",
+              text: `Choose ETH or USDG from the menu, then a rate. At a fixed rate the recipient gets exactly the amount that ${SITE_NAME} shows. A floating rate has a lower minimum, and the amount can move a little until the exchange.`,
+            },
+            {
+              title: "Enter the recipient",
+              text: `Paste the address on Robinhood Chain: \`0x\` and 40 hex digits. ${SITE_NAME} checks its form, and its checksum when it has capital letters.`,
+            },
+            {
+              title: "Review and pay",
+              text: `Review payment shows what the recipient gets, the XMR that leaves with its network fee, until when a fixed rate holds, and where a refund goes. Pay now sends the XMR to ${EXCHANGER.label}.`,
+            },
+            {
+              title: "Follow the payment",
+              text: `The card of the payment counts the confirmations of your XMR. ${EXCHANGER.label} takes it in after about ${APP.exchangerConfirmations} of them, exchanges it, and sends the coin. A payment usually takes 15 to 30 minutes, and you can close the app while it runs.`,
+            },
+          ],
+        },
+        {
+          kind: "callout",
+          title: "If a payment fails",
+          text: `${EXCHANGER.label} sends your XMR back to a new subaddress of your wallet, which the review names. If it does not come, write to \`${EXCHANGER_SUPPORT_EMAIL}\` with the swap ID. ${ORGANIZATION_NAME} cannot release, refund, or speed up a payment.`,
+        },
+        {
+          kind: "note",
+          text: `The fees of ${EXCHANGER.label} are part of every quote, so a small payment loses a larger share of its value. The recipient sees a transfer from ${EXCHANGER.label}, not from your wallet, and ${EXCHANGER.label} sees the amount, the time, and the recipient, never your keys.`,
         },
       ],
     },
@@ -583,7 +630,7 @@ const PRIVACY: DocsGroup = {
             "Your own node shows this to nobody else.",
             "A node that you trust is the next best choice.",
             `The app sends no analytics, no crash reports, and no usage data to ${ORGANIZATION_NAME}.`,
-            `The app talks to the relay of ${SITE_NAME} only to receive from Robinhood Chain, and to check that the relay answers when you open Settings. The relay keeps no record of a swap.`,
+            `The app talks to the relay of ${SITE_NAME} only to pay to or receive from Robinhood Chain, and to check that the relay answers when you open Settings. The relay keeps no record of a swap.`,
           ],
         },
       ],
@@ -706,7 +753,15 @@ const REFERENCE: DocsGroup = {
             },
             {
               term: "Swap",
-              text: `An exchange of ETH or USDG on Robinhood Chain for XMR, made by ${EXCHANGER.label}.`,
+              text: `An exchange between XMR and ETH or USDG on Robinhood Chain, made by ${EXCHANGER.label}, for a payment or a receive.`,
+            },
+            {
+              term: "Fixed rate",
+              text: `A rate that ${EXCHANGER.label} holds for a few minutes, so that the recipient of a payment gets exactly the quoted amount.`,
+            },
+            {
+              term: "Floating rate",
+              text: `A rate that follows the market until ${EXCHANGER.label} exchanges the XMR. Its minimum is lower.`,
             },
             { term: "Transaction ID", text: "The public name of a transaction on the chain." },
           ],
@@ -923,7 +978,7 @@ const PROJECT: DocsGroup = {
 export const DOCS = {
   meta: {
     title: `Docs | ${SITE_NAME}`,
-    description: `How the ${SITE_NAME} wallet works: create or restore a wallet, send and receive XMR, choose your node, and keep your seed safe. Plus the ${TOKEN.ticker} token.`,
+    description: `How the ${SITE_NAME} wallet works: create or restore a wallet, send and receive XMR, pay on Robinhood Chain, choose your node, and keep your seed safe. Plus the ${TOKEN.ticker} token.`,
   },
   // The top of the page, like the title of the sunrise on the home page: a label between stars, the title in capitals,
   // and a lead in plain words.
@@ -933,7 +988,7 @@ export const DOCS = {
     lead: "What the app does today, and how to keep your coins safe with it.",
     updatedLabel: "Updated",
     // The date of the last change to the text. Change it with the text.
-    updated: "5 October 2026",
+    updated: "6 October 2026",
   },
   sidebar: {
     label: "Docs",

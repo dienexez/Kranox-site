@@ -2,10 +2,11 @@
 // the three pages on 5 Oct 2026. copy.ts holds the text of the home page and of the shared parts.
 // Each fact about data comes from the code on 5 Oct 2026: scripts/deploy/server/nginx-site.conf keeps no access log,
 // nginx-headers.conf lets the page load files from its own address only and sends no referrer, the site loads its
-// fonts from its own files. The release 0.1.0 of the app sends the requests of wallet2 to the node of the user, and,
-// for the bridge only, the requests of apps/wallet/lib/bridge/client.dart to the relay: a quote, a swap with the coin,
-// the amount, a new subaddress, and an optional refund address, the state of an open swap every 15 seconds, and a
-// check that the relay answers when Settings opens. The relay writes no log of a request, and
+// fonts from its own files. The release 0.2.0 of the app, 6 Oct 2026, sends the requests of wallet2 to the node of the
+// user, and, for the bridge only, the requests of apps/wallet/lib/bridge/client.dart to the relay: a quote, a swap into
+// XMR with the coin, the amount, a new subaddress, and an optional refund address, the range and the quote of a
+// payment, a payment with the coin, the XMR, the rate, the recipient, and a new subaddress for a refund, the state of
+// an open swap every 15 seconds, and a check that the relay answers when Settings opens. The relay writes no log of a request, and
 // scripts/deploy/server/nginx-relay.conf keeps no access log for it. The page names no feature that the owner holds
 // back.
 import { RELEASE } from "./downloads.ts";
@@ -42,7 +43,7 @@ export interface LegalPage {
 }
 
 // The date of the last change to any of the three pages. Change it with the text.
-const UPDATED = "5 October 2026";
+const UPDATED = "6 October 2026";
 
 const CONTACT_SECTION: LegalSection = {
   heading: "Contact",
@@ -82,7 +83,7 @@ const PRIVACY: LegalPage = {
       heading: "The app",
       paragraphs: [
         `The app has no account and no sign-up, and it sends no analytics, no crash reports, and no usage data to ${ORGANIZATION_NAME}.`,
-        "Your seed, your keys, and your password stay on your device. The app keeps your wallet in a file that your password encrypts, a small settings file with your network and the node that you chose, and, once you receive from Robinhood Chain, a file with your swaps. It stores neither your password nor your seed. We never receive any of them, so we cannot see your balance or your payments, and we cannot restore a wallet for you.",
+        "Your seed, your keys, and your password stay on your device. The app keeps your wallet in a file that your password encrypts, a small settings file with your network and the node that you chose, and, once you pay to or receive from Robinhood Chain, a file with your swaps. It stores neither your password nor your seed. We never receive any of them, so we cannot see your balance or your payments, and we cannot restore a wallet for you.",
       ],
     },
     {
@@ -93,11 +94,11 @@ const PRIVACY: LegalPage = {
       ],
     },
     {
-      heading: "Receiving from Robinhood Chain",
+      heading: "Paying to and receiving from Robinhood Chain",
       paragraphs: [
-        `When you receive from Robinhood Chain, ${EXCHANGER.label} makes the exchange, and the app talks to it through our relay at ${RELAY_HOST}. For a swap, the relay gets the coin, the amount, a new subaddress of your wallet, and the refund address if you give one, and passes them on to ${EXCHANGER.label}. Then the app asks for the state of the swap until it ends. The app also asks the relay whether it answers when you open Settings.`,
+        `When you pay to or receive from Robinhood Chain, ${EXCHANGER.label} makes the exchange, and the app talks to it through our relay at ${RELAY_HOST}. To receive, the relay gets the coin, the amount, a new subaddress of your wallet, and the refund address if you give one. To pay, it gets the coin, the XMR, the rate, the address of the recipient, and a new subaddress of your wallet for a refund. The relay passes them on to ${EXCHANGER.label}, and the app asks for the state of each swap until it ends. The app also asks the relay whether it answers when you open Settings.`,
         "The relay keeps no record of a request, and its server keeps no access log. Like the site, the relay reaches you through Cloudflare, so Cloudflare sees your IP address when the app calls it.",
-        `${EXCHANGER.label} sees the amount, the time, the deposit, and the subaddress of each swap, but never your keys. The privacy policy of ${EXCHANGER.label} covers what it does with that data.`,
+        `${EXCHANGER.label} sees the amount, the time, the deposit, and the subaddress of each swap, and the recipient of each payment, but never your keys. The privacy policy of ${EXCHANGER.label} covers what it does with that data.`,
       ],
       links: [EXCHANGER_PRIVACY],
     },
@@ -134,7 +135,7 @@ const DISCLOSURES: LegalPage = {
     {
       heading: "Early software",
       paragraphs: [
-        `${SITE_NAME} ${RELEASE.version}, the first release, runs on macOS and on the main Monero network, with real XMR. It has seen little use with real money so far. Start with small amounts.`,
+        `${SITE_NAME} ${RELEASE.version} runs on macOS and on the main Monero network, with real XMR. It has seen little use with real money so far. Start with small amounts.`,
       ],
     },
     {
@@ -158,7 +159,7 @@ const DISCLOSURES: LegalPage = {
     {
       heading: `Swaps through ${EXCHANGER.label}`,
       paragraphs: [
-        `Receiving from Robinhood Chain goes through ${EXCHANGER.label}, an exchange that another company runs. ${EXCHANGER.label} sets the rate, can hold a swap for a check, and decides on refunds. ${ORGANIZATION_NAME} cannot release, refund, or speed up a swap. Send only the coin and the amount that the app shows, on Robinhood Chain, or your deposit may not arrive.`,
+        `Paying to and receiving from Robinhood Chain go through ${EXCHANGER.label}, an exchange that another company runs. ${EXCHANGER.label} sets the rate, can hold a swap for a check, and decides on refunds. ${ORGANIZATION_NAME} cannot release, refund, or speed up a swap. At a floating rate, the amount that a recipient gets can move until the exchange. When you receive, send only the coin and the amount that the app shows, on Robinhood Chain, or your deposit may not arrive.`,
       ],
     },
     {
@@ -221,7 +222,7 @@ const TERMS: LegalPage = {
     {
       heading: `Swaps through ${EXCHANGER.label}`,
       paragraphs: [
-        `When you receive from Robinhood Chain, ${EXCHANGER.label} makes the exchange, and its terms of use apply to it.`,
+        `When you pay to or receive from Robinhood Chain, ${EXCHANGER.label} makes the exchange, and its terms of use apply to it.`,
       ],
       links: [EXCHANGER_TERMS],
     },

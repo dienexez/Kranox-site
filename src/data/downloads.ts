@@ -4,7 +4,8 @@
 // help. copy.ts holds the text of the home page and of the shared parts.
 // On 5 Oct 2026 the first release came out: Kranox 0.1.0 for macOS, on GitHub, with a list of the hashes of its files
 // that the release key signs. RELEASE names it, and the file of macOS belongs to it. A new release changes RELEASE and
-// the file of each platform that has one. The page names no feature that the owner holds back.
+// the file of each platform that has one. On 6 Oct 2026 the release 0.2.0 followed, with pay to Robinhood Chain. The
+// page names no feature that the owner holds back.
 // The same day the owner held back every platform but macOS: the page shows a platform only when its value "shown"
 // is true, and a group only when it has a platform to show.
 import { REPOSITORY, SITE_NAME, SOCIAL_LINKS, X_HANDLE } from "./site.ts";
@@ -60,10 +61,10 @@ export interface Release {
   keyFingerprint: string;
 }
 
-// The release of 5 Oct 2026 on GitHub: the tag v0.1.0 at the commit 3b3918d of Kranox-Labs/Kranox. CHECKED 5 Oct 2026,
-// source the GitHub API: the release is public and the latest, and its three files verify; the key is the release key
-// of apps/wallet/tool/release/kranox-release-key.asc.
-const RELEASE_VERSION = "0.1.0";
+// The release of 6 Oct 2026 on GitHub: the tag v0.2.0 at the commit 10bc27f of Kranox-Labs/Kranox. CHECKED 6 Oct 2026,
+// source the GitHub API: the release is public and the latest, and its three files, downloaded without a login,
+// verify; the key is the release key of apps/wallet/tool/release/kranox-release-key.asc.
+const RELEASE_VERSION = "0.2.0";
 const RELEASE_PAGE = `${REPOSITORY.code.href}/releases/tag/v${RELEASE_VERSION}`;
 const RELEASE_FILES = `${REPOSITORY.code.href}/releases/download/v${RELEASE_VERSION}`;
 const HASHES_FILE = "hashes.txt";
@@ -72,7 +73,7 @@ const KEY_FILE = "kranox-release-key.asc";
 /** The current release. */
 export const RELEASE: Release = {
   version: RELEASE_VERSION,
-  published: "5 October 2026",
+  published: "6 October 2026",
   notesHref: RELEASE_PAGE,
   hashesFile: HASHES_FILE,
   hashesHref: `${RELEASE_FILES}/${HASHES_FILE}`,
@@ -95,7 +96,7 @@ export const PLATFORMS: readonly Platform[] = [
     shown: true,
     file: {
       href: `${RELEASE_FILES}/Kranox-${RELEASE_VERSION}-macos.dmg`,
-      sha256: "12fad08612940c30791f57ab24c2f84acf872bd067573c57d4beebc83dce58f3",
+      sha256: "7ea86c907bfff2447ad3f3a703c7387817d855ac7e6ebf3e7074553625ad3cbf",
     },
     install:
       "Open the disk image and drag Kranox into Applications. Apple hasn't notarized the app yet, so macOS blocks it the first time you open it. Go to System Settings › Privacy & Security and click Open Anyway next to the message about Kranox.",
@@ -185,7 +186,7 @@ const DEVICE_GROUPS = {
     label: "Mac",
     summary: "Apple silicon and Intel",
     title: `${SITE_NAME} for Mac`,
-    text: "The first release is for the Mac. Your wallet lives on your own computer and talks to a Monero node you choose, so your seed and your keys never leave the device.",
+    text: "Kranox runs on the Mac first. Your wallet lives on your own computer and talks to a Monero node you choose, so your seed and your keys never leave the device.",
   },
   mobile: {
     id: "mobile",
@@ -209,11 +210,12 @@ export const DOWNLOADS_COPY = {
     source: { label: "Source code", summary: "Public on GitHub" },
   },
   groups: DEVICE_GROUPS,
-  // What the release 0.1.0 does, in short points. The home page tells each one in full.
+  // What the release 0.2.0 does, in short points. The home page tells each one in full.
   desktopPoints: [
     "A 25-word seed that stays on your device",
     "A password lock",
     "Send and receive with subaddresses",
+    "Pay any Robinhood Chain address from XMR",
     "XMR from ETH or USDG on Robinhood Chain",
     "Every payment in one list",
     "Your own node, if you run one",
