@@ -7,12 +7,13 @@ import { EXCHANGER, SECTION_IDS } from "../data/site.ts";
 import Points from "./Points.astro";
 import WalletWidget from "./WalletWidget.astro";
 
-// The ink drawings of the first site: the seed carved in stone, a scroll, a spear on its way, a column on the
-// march, and a watch by a beacon.
+// The ink drawings of the first site: the seed carved in stone, a scroll, a spear on its way, a shield, a column on
+// the march, and a watch by a beacon.
 const FEATURE_IMAGES: Record<WalletFeatureId, ImageMetadata> = {
   hold: IMAGES.featureSeed,
   receive: IMAGES.featureScroll,
   send: IMAGES.featureSend,
+  privacy: IMAGES.featureShield,
   activity: IMAGES.featureSync,
   node: IMAGES.featureNode,
 };

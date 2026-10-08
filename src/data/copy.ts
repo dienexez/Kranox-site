@@ -3,7 +3,8 @@
 // On 3 Oct 2026 the owner asked for a site without content: the first goal was the look and the motion. On 4 Oct
 // 2026 the owner asked for the text after the sunrise. The owner approves the text before a deploy: the flag
 // CONTENT_APPROVED in site.ts. The names, the handle, and the tagline are facts of the brand.
-import { RELEASE } from "./downloads.ts";
+import { APP } from "./app.ts";
+import { RELEASE, RELEASE_STAGE } from "./downloads.ts";
 import { EXCHANGER, ORGANIZATION_NAME, SITE_NAME, X_HANDLE, type SectionId } from "./site.ts";
 
 export interface NavItem {
@@ -32,21 +33,45 @@ const DOWNLOAD = "Download";
 // The name of the docs page, in the menu and in the footer.
 const DOCS = "Docs";
 
-export type WalletFeatureId = "hold" | "receive" | "send" | "activity" | "node";
+export type WalletFeatureId = "hold" | "receive" | "send" | "privacy" | "activity" | "node";
 
 // A widget is a small piece of the app beside the drawing of a feature, after the widgets of butter.video: one
 // part of a screen, not the whole window. Its values are samples.
 export type WalletWidget =
   | { kind: "unlock"; title: string; lead: string; field: string; action: string; note: string }
   | { kind: "receive"; label: string; address: string; actions: readonly [string, string] }
-  | { kind: "send"; title: string; rows: readonly (readonly [string, string])[]; actions: readonly [string, string] }
+  | {
+      kind: "send";
+      title: string;
+      rows: readonly (readonly [string, string])[];
+      /** The hint of the empty password field that each send asks for. */
+      password: string;
+      actions: readonly [string, string];
+    }
+  | {
+      kind: "privacy";
+      /** One part of the ring for each check of the wallet, in their order: lit when the check is clear. */
+      ring: readonly boolean[];
+      ringLabel: string;
+      title: string;
+      lead: string;
+      checks: readonly { title: string; line: string; clear: boolean }[];
+    }
   | {
       kind: "activity";
       title: string;
       rows: readonly { incoming: boolean; title: string; detail: string; amount: string }[];
       unit: string;
     }
-  | { kind: "node"; label: string; node: string; status: string; height: string; chip: string }
+  | {
+      kind: "node";
+      label: string;
+      node: string;
+      proxy: { label: string; value: string };
+      status: string;
+      height: string;
+      chip: string;
+    }
   | {
       kind: "bridge";
       tabs: readonly [string, string];
@@ -79,14 +104,16 @@ export interface BridgeCopy {
 }
 
 // What the wallet does, in plain words, one feature at a time beside a drawing and a widget of the app. The text
-// comes from the first site, without the features that the owner holds back, and says only what the releases of 5 and
-// 6 Oct 2026 do.
+// comes from the first site, without the features that the owner holds back, and says only what the release 0.3.1 beta
+// of 8 Oct 2026 does. On 8 Oct 2026 the owner asked for the features of the betas: the privacy check and the menu
+// Privacy as a feature of their own, the password before each send, the lock after a time without use, and the proxy
+// of the node. The words in the widgets are the words of the app, apps/wallet/lib/ui/copy.dart.
 const WALLET_FEATURES: readonly WalletFeature[] = [
   {
     id: "hold",
     title: "A wallet that only you hold",
-    text: "Your wallet comes from a 25-word seed that never leaves your device. A password locks it, and the same 25 words restore it on a new one. No account, no server login.",
-    points: ["Keys on your device", "Password lock", "Restore with 25 words", "No account"],
+    text: `Your wallet comes from a 25-word seed that never leaves your device. A password guards it, the wallet locks itself after ${APP.idleLockMinutes} minutes without use, and the same 25 words restore it on a new one. No account, no server login.`,
+    points: ["Keys on your device", "Password lock", `Locks after ${APP.idleLockMinutes} minutes`, "No account"],
     widget: {
       kind: "unlock",
       title: "Welcome back",
@@ -116,8 +143,8 @@ const WALLET_FEATURES: readonly WalletFeature[] = [
   {
     id: "send",
     title: "See the fee before you send",
-    text: "Kranox checks the address and the amount, then shows the network fee and the total before anything leaves your wallet. After the send, you keep the transaction id.",
-    points: ["Address check", "Fee first", "Transaction id"],
+    text: "Kranox checks the address and the amount, then shows the network fee and the total. Nothing leaves without your password, and after the send you keep the transaction id.",
+    points: ["Address check", "Fee first", "Password to send", "Transaction id"],
     widget: {
       kind: "send",
       title: "Check the payment",
@@ -126,10 +153,33 @@ const WALLET_FEATURES: readonly WalletFeature[] = [
         ["Network fee", `0.0000312 ${XMR}`],
         ["Total", `25.0000312 ${XMR}`],
       ],
+      password: "Your password, to send",
       actions: ["Send now", "Cancel"],
     },
     imageAlt:
-      "Ink drawing of a Spartan who throws a spear, and the review of a payment of 25 XMR with its network fee.",
+      "Ink drawing of a Spartan who throws a spear, and the review of a payment of 25 XMR with its network fee and the password field.",
+  },
+  {
+    id: "privacy",
+    title: "See what your wallet gives away",
+    text: "Before a payment leaves, Kranox checks its amount, its timing, and its address against your own history, and suggests a new amount in one click. The Privacy menu checks your whole wallet, and your addresses on Robinhood Chain.",
+    points: ["Amount, timing, address", "New amount in one click", "Whole-wallet checks", "Robinhood Chain scan"],
+    // The summary of the menu Privacy with sample data, as in the app: six checks of the wallet in their order, node,
+    // subaddresses, swaps, refund addresses, new XMR, and the lock, of which the swaps and the refund addresses are not
+    // clear. The title counts those two, and the widget shows their tiles.
+    widget: {
+      kind: "privacy",
+      ring: [true, true, false, false, true, true],
+      ringLabel: "Clear",
+      title: "2 things to improve",
+      lead: "Click a check to see what it found and what you can do.",
+      checks: [
+        { title: "Swaps with Robinhood Chain", line: "1 pair can be matched", clear: false },
+        { title: "Refund addresses", line: "1 address links both sides", clear: false },
+      ],
+    },
+    imageAlt:
+      "Ink drawing of a round shield with the M of Monero over a spear, and the Privacy menu of Kranox: four of six checks clear, and two things to improve.",
   },
   {
     id: "activity",
@@ -152,19 +202,21 @@ const WALLET_FEATURES: readonly WalletFeature[] = [
   {
     id: "node",
     title: "Your own node",
-    text: "Kranox talks to the node that you choose. Run your own for the most privacy, or pick one that you trust, and change it at any time.",
-    points: ["Your own node", "Any node you trust", "Live sync"],
-    // The default node of mainnet in the release 0.1.0 (AppConfig.defaultNode), and the height of mainnet. CHECKED 5 Oct
-    // 2026, source get_info of that node: 3,777,437.
+    text: "Kranox talks to the node that you choose. Run your own for the most privacy, or pick one that you trust. A proxy such as Tor keeps your IP address from the node, and you can change both at any time.",
+    points: ["Your own node", "Any node you trust", "Tor or another proxy", "Live sync"],
+    // The default node of mainnet, and the height of mainnet. CHECKED 5 Oct 2026, source get_info of that node:
+    // 3,777,437. The proxy is the one of Tor on the same Mac, as Settings shows it.
     widget: {
       kind: "node",
       label: "Node address",
-      node: "xmr-node.cakewallet.com:18081",
+      node: APP.defaultNode,
+      proxy: { label: "Proxy, such as Tor (optional)", value: APP.torProxy },
       status: "Synced",
       height: "3,777,437",
       chip: "Node online",
     },
-    imageAlt: "Ink drawing of a Spartan on watch beside a beacon at night, and the node and the sync of Kranox.",
+    imageAlt:
+      "Ink drawing of a Spartan on watch beside a beacon at night, and the node, the proxy, and the sync of Kranox.",
   },
 ];
 
@@ -179,7 +231,14 @@ const BRIDGE_COPY: BridgeCopy = {
   title: BRIDGE,
   poweredBy: "Powered by",
   text: `Pay any Robinhood Chain address in ETH or USDG straight from your ${XMR}, or send ETH or USDG from Robinhood Chain and get ${XMR} in your wallet. ${EXCHANGER.label} handles the exchange.`,
-  points: ["Pay out of XMR", "Receive into XMR", "ETH and USDG", "Fixed or floating rate", "Track every step"],
+  points: [
+    "Pay out of XMR",
+    "Receive into XMR",
+    "ETH and USDG",
+    "Fixed or floating rate",
+    "Check the recipient first",
+    "Track every step",
+  ],
   // A sample swap into XMR, as the receive page of the app makes it: each swap pays into a new subaddress. The amount
   // that comes in follows the prices of 5 Oct 2026 (CoinGecko: XMR 547.88 USD, ETH 2,727.50 USD), before the fee of
   // the exchanger.
@@ -202,17 +261,22 @@ const SECTIONS: readonly NavItem[] = [
 ];
 
 // The questions follow the doubts of a reader, the most common one first. They come from the first site, without
-// the features that the owner holds back, and with the state of the release 0.2.0 of 6 Oct 2026. What comes next names
-// only the parts that the docs already name.
+// the features that the owner holds back, and with the state of the release 0.3.1 beta of 8 Oct 2026. What comes next
+// names only the parts that the docs already name; it changes with the main release.
 const FAQ_ITEMS = [
   {
     question: "Can I use Kranox today?",
-    answer: `Yes, on a Mac. Version ${RELEASE.version} is out and runs on the Monero mainnet with real XMR. It's early software, so start with a small amount.`,
+    answer: `Yes, on a Mac. Version ${RELEASE.name} is out and runs on the Monero mainnet with real XMR. It's ${RELEASE_STAGE}, so start with a small amount.`,
   },
   {
     question: "Who holds my keys?",
     answer:
       "You do. Your seed and your keys stay on your device, locked with your password. Kranox has no account and no server login, so Kranox Labs cannot see your keys, move your coins, or restore your wallet.",
+  },
+  {
+    question: "Does the privacy check send my data anywhere?",
+    answer:
+      "No. The check before each payment and the Monero checks of the Privacy menu run on your Mac. Only a scan of a Robinhood Chain address leaves it, through our relay, so the explorer never sees your IP address.",
   },
   {
     question: "Does Kranox write its own cryptography?",
@@ -224,7 +288,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "What comes next?",
-    answer: `A privacy check before each send, Touch ID to unlock, and pay by name. Each part ships when it is solid, so follow ${X_HANDLE} on X to watch the build.`,
+    answer: `The main release comes once the beta has run with real coins for a while, and after it Touch ID to unlock and pay by name. Each part ships when it is solid, so follow ${X_HANDLE} on X to watch the build.`,
   },
   {
     question: "Is Kranox part of the Monero project?",
@@ -235,7 +299,7 @@ const FAQ_ITEMS = [
 export const COPY = {
   meta: {
     title: SITE_NAME,
-    description: `${SITE_NAME} is a self-custodial Monero wallet. Version ${RELEASE.version} is out for the Mac.`,
+    description: `${SITE_NAME} is a self-custodial Monero wallet. Version ${RELEASE.name} is out for the Mac.`,
     socialImageAlt:
       "Ink drawing of a Spartan hoplite who stands on a ridge in front of an orange sun. Arrows fill the sky. The shield carries the M of the Monero symbol.",
   },
@@ -270,8 +334,8 @@ export const COPY = {
     statement:
       "On a public chain, every payment stands alone in the open. Monero holds the line. Each payment hides among others: no sender, no receiver, no amount in sight.",
     // The owner asked on 4 Oct 2026 for the desktop app below the statement, without the phone, and then for no
-    // caption below it, and later for the picture of the real app with a large balance and activity. From 5 Oct 2026
-    // the picture shows the release 0.1.0 on mainnet. The alternative text says that the data are samples.
+    // caption below it, and later for the picture of the real app with a large balance and activity. From 8 Oct 2026
+    // the picture shows the release 0.3.1 beta on mainnet. The alternative text says that the data are samples.
     app: {
       alt: "The home screen of Kranox for Mac with sample data: the balance with its locked part, the coins that are unlocking, the receive address, and the recent activity, over a drawing of a Spartan treasury.",
     },

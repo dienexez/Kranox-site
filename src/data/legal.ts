@@ -2,14 +2,15 @@
 // the three pages on 5 Oct 2026. copy.ts holds the text of the home page and of the shared parts.
 // Each fact about data comes from the code on 5 Oct 2026: scripts/deploy/server/nginx-site.conf keeps no access log,
 // nginx-headers.conf lets the page load files from its own address only and sends no referrer, the site loads its
-// fonts from its own files. The release 0.2.0 of the app, 6 Oct 2026, sends the requests of wallet2 to the node of the
-// user, and, for the bridge only, the requests of apps/wallet/lib/bridge/client.dart to the relay: a quote, a swap into
-// XMR with the coin, the amount, a new subaddress, and an optional refund address, the range and the quote of a
-// payment, a payment with the coin, the XMR, the rate, the recipient, and a new subaddress for a refund, the state of
-// an open swap every 15 seconds, and a check that the relay answers when Settings opens. The relay writes no log of a request, and
-// scripts/deploy/server/nginx-relay.conf keeps no access log for it. The page names no feature that the owner holds
-// back.
-import { RELEASE } from "./downloads.ts";
+// fonts from its own files. The release 0.3.1 beta of the app, 8 Oct 2026, sends the requests of wallet2 to the node of
+// the user, through the proxy of the user when one is set, and the requests of apps/wallet/lib/bridge/client.dart to
+// the relay: a quote, a swap into XMR with the coin, the amount, a new subaddress, and an optional refund address, the
+// range and the quote of a payment, a payment with the coin, the XMR, the rate, the recipient, and a new subaddress for
+// a refund, the state of an open swap every 15 seconds with the token of that swap, the address of a scan on Robinhood
+// Chain, and a check that the relay answers when Settings opens. The relay writes no log of a request, and
+// scripts/deploy/server/nginx-relay.conf keeps no access log for it; site.ts says what the relay holds in memory and
+// which sources a scan asks. The page names no feature that the owner holds back.
+import { RELEASE, RELEASE_STAGE } from "./downloads.ts";
 import {
   CONTACT_EMAIL,
   EXCHANGER,
@@ -19,6 +20,8 @@ import {
   type LegalSlug,
   ORGANIZATION_NAME,
   RELAY_HOST,
+  RELAY_MEMORY_MINUTES,
+  SCAN_SOURCES,
   SITE_NAME,
 } from "./site.ts";
 
@@ -43,7 +46,7 @@ export interface LegalPage {
 }
 
 // The date of the last change to any of the three pages. Change it with the text.
-const UPDATED = "6 October 2026";
+const UPDATED = "8 October 2026";
 
 const CONTACT_SECTION: LegalSection = {
   heading: "Contact",
@@ -83,24 +86,32 @@ const PRIVACY: LegalPage = {
       heading: "The app",
       paragraphs: [
         `The app has no account and no sign-up, and it sends no analytics, no crash reports, and no usage data to ${ORGANIZATION_NAME}.`,
-        "Your seed, your keys, and your password stay on your device. The app keeps your wallet in a file that your password encrypts, a small settings file with your network and the node that you chose, and, once you pay to or receive from Robinhood Chain, a file with your swaps. It stores neither your password nor your seed. We never receive any of them, so we cannot see your balance or your payments, and we cannot restore a wallet for you.",
+        "Your seed, your keys, and your password stay on your device. The app keeps your wallet in a file that your password encrypts, a small settings file with your network, the node that you chose, and a proxy if you set one, and, once you pay to or receive from Robinhood Chain, a file with your swaps. It stores neither your password nor your seed. We never receive any of them, so we cannot see your balance or your payments, and we cannot restore a wallet for you.",
       ],
     },
     {
       heading: "Nodes",
       paragraphs: [
         "To show your balance and to send a payment, the app talks to a Monero node. Monero hides the sender, the receiver, and the amount of each payment, but the node that you use can still see your IP address, when your wallet connects, and the transactions that you send through it.",
-        `A new wallet starts with a public node that a third party runs, not ${ORGANIZATION_NAME}. You can switch to any node at any time in the settings of the app. Your own node gives you the most privacy.`,
+        `A new wallet starts with a public node that a third party runs, not ${ORGANIZATION_NAME}. You can switch to any node at any time in the settings of the app. Your own node gives you the most privacy, and a proxy such as Tor, which you can also set there, hides your IP address from the node.`,
       ],
     },
     {
       heading: "Paying to and receiving from Robinhood Chain",
       paragraphs: [
         `When you pay to or receive from Robinhood Chain, ${EXCHANGER.label} makes the exchange, and the app talks to it through our relay at ${RELAY_HOST}. To receive, the relay gets the coin, the amount, a new subaddress of your wallet, and the refund address if you give one. To pay, it gets the coin, the XMR, the rate, the address of the recipient, and a new subaddress of your wallet for a refund. The relay passes them on to ${EXCHANGER.label}, and the app asks for the state of each swap until it ends. The app also asks the relay whether it answers when you open Settings.`,
-        "The relay keeps no record of a request, and its server keeps no access log. Like the site, the relay reaches you through Cloudflare, so Cloudflare sees your IP address when the app calls it.",
+        `The relay writes no log of a request, and its server keeps no access log. So that trying again never makes a second exchange, the relay holds its answer to a new swap in memory for ${RELAY_MEMORY_MINUTES} minutes, without your IP address, and then forgets it. Like the site, the relay reaches you through Cloudflare, so Cloudflare sees your IP address when the app calls it.`,
         `${EXCHANGER.label} sees the amount, the time, the deposit, and the subaddress of each swap, and the recipient of each payment, but never your keys. The privacy policy of ${EXCHANGER.label} covers what it does with that data.`,
       ],
       links: [EXCHANGER_PRIVACY],
+    },
+    {
+      heading: "Scans of Robinhood Chain addresses",
+      paragraphs: [
+        `When you scan an address in the Privacy menu of the app, or check the recipient of a payment, the app sends that address to our relay. The relay asks ${SCAN_SOURCES.first}, or ${SCAN_SOURCES.fallback} when ${SCAN_SOURCES.first} fails, for the public history of the address on Robinhood Chain and passes it back. They see the address, but the request comes from our relay, so they never see your IP address.`,
+        `The relay writes no log of a scan. It holds a scan in memory for ${RELAY_MEMORY_MINUTES} minutes, without your IP address, so that a second look at the same address needs no new request, and then forgets it.`,
+        "Every other check of the Privacy menu, and the privacy check on the review of a payment, runs on your device. Nothing of it leaves the device.",
+      ],
     },
     {
       heading: "Email and social accounts",
@@ -135,7 +146,7 @@ const DISCLOSURES: LegalPage = {
     {
       heading: "Early software",
       paragraphs: [
-        `${SITE_NAME} ${RELEASE.version} runs on macOS and on the main Monero network, with real XMR. It has seen little use with real money so far. Start with small amounts.`,
+        `${SITE_NAME} ${RELEASE.name} runs on macOS and on the main Monero network, with real XMR. It's ${RELEASE_STAGE}, and it has seen little use with real money so far. Start with small amounts.`,
       ],
     },
     {
@@ -148,6 +159,12 @@ const DISCLOSURES: LegalPage = {
       heading: "Payments are final",
       paragraphs: [
         `A Monero payment cannot be reversed. Check the address and the amount before you send. ${ORGANIZATION_NAME} cannot cancel, refund, or trace a payment.`,
+      ],
+    },
+    {
+      heading: "Privacy checks",
+      paragraphs: [
+        `The privacy check and the Privacy menu of ${SITE_NAME} look for patterns that we know of, in the history on your device and in the public history of an address that you scan. They cannot find every way to link your payments, and a clear check is no promise that nobody can.`,
       ],
     },
     {

@@ -1,15 +1,17 @@
 // The text of the docs page: one page of sections with a list of them at the side. The layout follows
 // docs.ponsfamily.com, which the owner showed on 5 Oct 2026, and the look follows the home page, as the owner asked
-// the same day. Each fact about the app comes from the code of the release 0.2.0 of apps/wallet, 6 Oct 2026: the
-// values of lib/config/app_config.dart, the checks of lib/core/, and the words of the screens in lib/ui/copy.dart,
-// so that the page says only what the app does. The facts about Monero come from cryptonote_config.h of the
-// Monero project. The page names no feature that the owner holds back, and no platform but the Mac: on 5 Oct 2026 the
-// owner held the platforms that are still coming. The same day the owner asked for the token of the project on the
-// page: TOKEN_GROUP holds it, with the words of the owner and the facts of the docs of Pons v2. R6 of docs/HANDOFF.md
-// bans one word from every text. copy.ts holds the text of the home page.
+// the same day. Each fact about the app comes from the code of the release 0.3.1 beta of apps/wallet, 8 Oct 2026: the
+// values of lib/config/app_config.dart, which app.ts holds, the checks of lib/core/ and lib/privacy/, and the words of
+// the screens in lib/ui/copy.dart, so that the page says only what the app does. The facts about Monero come from
+// cryptonote_config.h of the Monero project. The page names no feature that the owner holds back, and no platform but
+// the Mac: on 5 Oct 2026 the owner held the platforms that are still coming. The same day the owner asked for the
+// token of the project on the page: TOKEN_GROUP holds it, with the words of the owner and the facts of the docs of
+// Pons v2. On 8 Oct 2026 the owner asked for the features of the betas on the page. R6 of docs/HANDOFF.md bans one
+// word from every text. copy.ts holds the text of the home page.
 //
 // A text can carry two marks: `code` for a value that a user types or reads, and [label](href) for a link.
-import { DOWNLOADS_SECTION_IDS, RELEASE } from "./downloads.ts";
+import { APP, MONERO } from "./app.ts";
+import { DOWNLOADS_SECTION_IDS, RELEASE, RELEASE_STAGE } from "./downloads.ts";
 import { LEGAL } from "./legal.ts";
 import {
   CONTACT_EMAIL,
@@ -20,6 +22,7 @@ import {
   type LegalSlug,
   ORGANIZATION_NAME,
   RELAY_HOST,
+  RELAY_MEMORY_MINUTES,
   REPOSITORY,
   SITE_NAME,
   SOCIAL_LINKS,
@@ -82,9 +85,13 @@ const IDS = {
   payChain: "pay-to-robinhood-chain",
   activity: "activity",
   node: "node",
+  tor: "use-tor",
   ownNode: "own-node",
   hides: "what-monero-hides",
   nodeSees: "what-a-node-sees",
+  privacyCheck: "privacy-check",
+  privacyMenu: "privacy-menu",
+  scan: "scan-an-address",
   seedSafety: "seed-safety",
   networks: "networks",
   amounts: "amounts",
@@ -102,38 +109,6 @@ const IDS = {
 function anchor(id: string): string {
   return `#${id}`;
 }
-
-// Values of the app, apps/wallet/lib/config/app_config.dart, in the release 0.2.0 of 6 Oct 2026.
-const APP = {
-  /** AppConfig.defaultNode: the node of a new wallet on mainnet. */
-  defaultNode: "xmr-node.cakewallet.com:18081",
-  /** AppConfig.minPasswordLength. */
-  minPasswordLength: 8,
-  /** AppConfig.autoRefreshInterval, in seconds. */
-  refreshSeconds: 20,
-  /** AppConfig.decoyCount. */
-  decoys: 15,
-  /** AppConfig.recentActivityCount. */
-  recentCount: 5,
-  /** AppConfig.bridgeStatusInterval, in seconds: how often the app asks for the state of an open swap. */
-  swapCheckSeconds: 15,
-  /** AppConfig.exchangerXmrConfirmations: the confirmations of Monero after which ChangeNOW takes in the XMR, about. */
-  exchangerConfirmations: 6,
-} as const;
-
-// Values of Monero. CHECKED 5 Oct 2026, source cryptonote_config.h on the branch master of monero-project/monero:
-// CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE, DIFFICULTY_TARGET_V2, CRYPTONOTE_DISPLAY_DECIMAL_POINT, and the RPC ports. The
-// first characters of the addresses follow from their prefixes, 18 and 42 on mainnet, 24 and 36 on stagenet, and 53
-// and 63 on testnet, checked with the base58 of Monero on the same date: a testnet address starts with 9 or, about
-// one time in five, with A.
-const MONERO = {
-  unlockBlocks: 10,
-  blockMinutes: 2,
-  decimals: 12,
-  mainnetPort: 18081,
-  stagenetPort: 38081,
-  testnetPort: 28081,
-} as const;
 
 const RING_SIZE = APP.decoys + 1;
 const UNLOCK_MINUTES = MONERO.unlockBlocks * MONERO.blockMinutes;
@@ -167,7 +142,7 @@ const GETTING_STARTED: DocsGroup = {
           kind: "callout",
           title: "Before you start",
           items: [
-            `Version ${RELEASE.version} is out for macOS. It runs on the Monero mainnet with real XMR, so start with a small amount.`,
+            `Version ${RELEASE.name} is out for macOS. It's ${RELEASE_STAGE} that runs on the Monero mainnet with real XMR, so start with a small amount.`,
             "Your 25-word seed is the only backup of your wallet. Nobody can restore it for you.",
             "A Monero payment is final. Check the address before you send.",
           ],
@@ -180,19 +155,34 @@ const GETTING_STARTED: DocsGroup = {
       blocks: [
         {
           kind: "text",
-          text: `${SITE_NAME} ${RELEASE.version} came out on ${RELEASE.published} for macOS. It runs on the Monero mainnet, where coins are real XMR, and it can pay any address on Robinhood Chain from your XMR. It's early software and has seen little use with real money so far, so start with small amounts.`,
+          text: `${SITE_NAME} ${RELEASE.name} came out on ${RELEASE.published} for macOS. It runs on the Monero mainnet, where coins are real XMR, and it pays to and receives from Robinhood Chain. It's ${RELEASE_STAGE} and has seen little use with real money so far, so start with small amounts.`,
         },
         {
           kind: "facts",
           items: [
-            { label: "Version", value: RELEASE.version, href: RELEASE.notesHref },
+            { label: "Version", value: RELEASE.name, href: RELEASE.notesHref },
             { label: "Platform", value: "macOS 12 or later, on Apple silicon and Intel" },
             { label: "Network", value: "Mainnet, with stagenet and testnet in Settings" },
           ],
         },
         {
           kind: "text",
-          text: `Next on the list are a privacy check before each send, Touch ID to unlock, and pay by name. Follow [${X_HANDLE}](${SOCIAL_LINKS.x.href}) on X to watch the build.`,
+          text: "New since 0.2.0:",
+        },
+        {
+          kind: "points",
+          items: [
+            `A [privacy check](${anchor(IDS.privacyCheck)}) on the review of each payment, and [Privacy](${anchor(IDS.privacyMenu)}) in the sidebar, which checks your whole wallet.`,
+            `A [scan of an address](${anchor(IDS.scan)}) of yours on Robinhood Chain, and a check of the recipient before you pay.`,
+            `A [proxy such as Tor](${anchor(IDS.tor)}) between your wallet and its node.`,
+            `Your password before each send, and a lock after ${APP.idleLockMinutes} minutes without use.`,
+            "A payment link in the QR code of a deposit from Robinhood Chain.",
+            `The fixes of the [${REPOSITORY.review.label}](${REPOSITORY.review.href}), such as a signature on every answer of the relay.`,
+          ],
+        },
+        {
+          kind: "text",
+          text: `Next come the main release, Touch ID to unlock, and pay by name. Follow [${X_HANDLE}](${SOCIAL_LINKS.x.href}) on X to watch the build.`,
         },
       ],
     },
@@ -224,6 +214,10 @@ const GETTING_STARTED: DocsGroup = {
         {
           kind: "text",
           text: `You can also build the app from its code. The steps are under [Source code](${anchor(IDS.source)}).`,
+        },
+        {
+          kind: "note",
+          text: `To update, drag the new version into Applications over the old one. Your wallet and your settings stay where they are.`,
         },
         {
           kind: "callout",
@@ -321,6 +315,14 @@ const WALLET: DocsGroup = {
               text: `A locked wallet shows nothing until you enter the password.`,
             },
             {
+              term: "Auto-lock",
+              text: `After ${APP.idleLockMinutes} minutes without use, ${SITE_NAME} locks the wallet by itself. A payment on its way finishes first.`,
+            },
+            {
+              term: "Password to send",
+              text: "Each send, and each payment to Robinhood Chain, asks for your password before anything leaves the wallet.",
+            },
+            {
               term: "Show seed",
               text: "Settings › Seed shows your 25 words after you enter your password.",
             },
@@ -376,7 +378,7 @@ const WALLET: DocsGroup = {
             },
             {
               title: "Get a deposit address",
-              text: `${SITE_NAME} makes a new subaddress and asks ${EXCHANGER.label} for a swap to it. You get a deposit address on Robinhood Chain, as text and as a QR code.`,
+              text: `${SITE_NAME} makes a new subaddress and asks ${EXCHANGER.label} for a swap to it. You get a deposit address on Robinhood Chain, as text and as a QR code. The code is a payment link that also names Robinhood Chain, the coin, and the amount. If your other wallet can't read it, choose Address only.`,
             },
             {
               title: "Send exactly that amount",
@@ -412,13 +414,17 @@ const WALLET: DocsGroup = {
             },
             {
               title: "Review the payment",
-              text: `${SITE_NAME} builds the payment and shows the network fee and the total. Nothing has left your wallet yet.`,
+              text: `${SITE_NAME} builds the payment and shows the network fee, the total, and a [privacy check](${anchor(IDS.privacyCheck)}). Nothing has left your wallet yet.`,
             },
             {
               title: "Send now",
-              text: `The node takes the payment, and you get its transaction ID. A block confirms it in about ${MONERO.blockMinutes} minutes.`,
+              text: `Enter your password and click Send now. The node takes the payment, and you get its transaction ID. A block confirms it in about ${MONERO.blockMinutes} minutes.`,
             },
           ],
+        },
+        {
+          kind: "note",
+          text: `If the node asks for a network fee above ${APP.maxNetworkFee} XMR, ${SITE_NAME} stops the payment before its review, and nothing leaves. Choose another node in Settings, or try again later.`,
         },
         {
           kind: "callout",
@@ -456,7 +462,7 @@ const WALLET: DocsGroup = {
             },
             {
               title: "Review and pay",
-              text: `Review payment shows what the recipient gets, the XMR that leaves with its network fee, until when a fixed rate holds, and where a refund goes. Pay now sends the XMR to ${EXCHANGER.label}.`,
+              text: `Review payment shows what the recipient gets, the XMR that leaves with its network fee, until when a fixed rate holds, where a refund goes, and a [privacy check](${anchor(IDS.privacyCheck)}). If the recipient is an address of yours, Check this address shows what it already gives away on Robinhood Chain. Enter your password, and Pay now sends the XMR to ${EXCHANGER.label}.`,
             },
             {
               title: "Follow the payment",
@@ -549,6 +555,34 @@ const NODE: DocsGroup = {
       ],
     },
     {
+      id: IDS.tor,
+      title: "Use Tor",
+      blocks: [
+        {
+          kind: "text",
+          text: "A node that someone else runs sees your IP address and when you send. A proxy such as Tor hides your IP address from it: the node sees the proxy instead.",
+        },
+        {
+          kind: "steps",
+          items: [
+            { title: "Start Tor", text: "Run Tor on your Mac, or keep Tor Browser open." },
+            {
+              title: "Enter the proxy",
+              text: `In Settings › Node, type \`${APP.torProxy}\` under Proxy, such as Tor. While Tor Browser runs, use \`${APP.torBrowserProxy}\` instead.`,
+            },
+            {
+              title: "Save node",
+              text: `${SITE_NAME} connects to the node through the proxy and keeps both for the next start.`,
+            },
+          ],
+        },
+        {
+          kind: "note",
+          text: `[Privacy](${anchor(IDS.privacyMenu)}) in the sidebar warns you when your wallet talks to a public node without a proxy. Leave the field empty to reach the node straight.`,
+        },
+      ],
+    },
+    {
       id: IDS.ownNode,
       title: "Run your own node",
       blocks: [
@@ -628,10 +662,128 @@ const PRIVACY: DocsGroup = {
           kind: "points",
           items: [
             "Your own node shows this to nobody else.",
+            `A proxy such as Tor hides your IP address from the node. See [Use Tor](${anchor(IDS.tor)}).`,
             "A node that you trust is the next best choice.",
             `The app sends no analytics, no crash reports, and no usage data to ${ORGANIZATION_NAME}.`,
-            `The app talks to the relay of ${SITE_NAME} only to pay to or receive from Robinhood Chain, and to check that the relay answers when you open Settings. The relay keeps no record of a swap.`,
+            `The app talks to the relay of ${SITE_NAME} only to pay to or receive from Robinhood Chain, to scan an address that you enter, and to check that the relay answers when you open Settings. The relay writes no log of a request.`,
           ],
+        },
+      ],
+    },
+    {
+      id: IDS.privacyCheck,
+      title: "The privacy check",
+      blocks: [
+        {
+          kind: "text",
+          text: "Monero hides each payment on its chain, but a pattern can still give you away, such as an amount that matches one that came in, or a payment right after a swap. So the review of each payment shows a privacy check of three things.",
+        },
+        {
+          kind: "terms",
+          items: [
+            {
+              term: "Amount",
+              text: `Is it close to XMR that came in over the last ${APP.privacyAmountDays} days, or to coins that you sent in from Robinhood Chain? Anyone who sees both can match them, so ${SITE_NAME} suggests a new amount that you can take in one click.`,
+            },
+            {
+              term: "Timing",
+              text: `Could the payment spend XMR that came in less than ${APP.privacyFreshHours} hours ago? A short gap makes the two easy to match, so the check says how long a wait helps.`,
+            },
+            {
+              term: "Address",
+              text: "For a payment to Robinhood Chain: did you give the recipient as the refund address of a receive? Paying it from XMR links both sides.",
+            },
+          ],
+        },
+        {
+          kind: "note",
+          text: "The check runs on your Mac and only advises. It shows All clear or its warnings, and you can still send.",
+        },
+      ],
+    },
+    {
+      id: IDS.privacyMenu,
+      title: "The Privacy menu",
+      blocks: [
+        {
+          kind: "text",
+          text: "Privacy, in the sidebar, checks your whole wallet from its own history on your Mac. A ring shows how many checks are clear. Click a check to see what it found and what you can do.",
+        },
+        {
+          kind: "terms",
+          items: [
+            {
+              term: "Node",
+              text: `Your own node, a node through a proxy, or a public node that sees your IP address. See [Use Tor](${anchor(IDS.tor)}).`,
+            },
+            {
+              term: "Subaddresses",
+              text: "A subaddress that took more than one payment ties those payers together. New subaddress gives the next payer a fresh one.",
+            },
+            {
+              term: "Swaps with Robinhood Chain",
+              text: "A receive and a payment that sit close in time or amount can be matched. Next time, leave a day between them and change the amount.",
+            },
+            {
+              term: "Refund addresses",
+              text: "A refund address of yours that you later paid from XMR links both sides.",
+            },
+            {
+              term: "New XMR",
+              text: `XMR that came in within the last ${APP.privacyFreshHours} hours is easy to match with a payment that spends it soon after.`,
+            },
+            {
+              term: "Lock and password",
+              text: `The wallet locks after ${APP.idleLockMinutes} minutes without use, and each send asks for your password.`,
+            },
+          ],
+        },
+        {
+          kind: "note",
+          text: "Everything on the Monero tab comes from your Mac. Nothing leaves it.",
+        },
+      ],
+    },
+    {
+      id: IDS.scan,
+      title: "Scan an address",
+      blocks: [
+        {
+          kind: "text",
+          text: "Robinhood Chain is public, so an address of yours there can say more than you think. On the Robinhood Chain tab of Privacy, paste an address of yours and click Scan. Five checks read its public history.",
+        },
+        {
+          kind: "terms",
+          items: [
+            {
+              term: "First funding",
+              text: "Who sent it its first coins: an address of yours, a named address such as an exchange, or an address without a name.",
+            },
+            {
+              term: "Your other addresses",
+              text: `Direct transfers with another address of yours that ${SITE_NAME} knows.`,
+            },
+            {
+              term: "Look-alike addresses",
+              text: "Senders whose address looks like one that it paid. Such a sender hopes that you copy its address by mistake.",
+            },
+            {
+              term: "Swaps with Kranox",
+              text: "Its part in your swaps: a receive that it funded, a payment that it got, or a refund address.",
+            },
+            {
+              term: "What everyone sees",
+              text: "Its transactions and token transfers, its first day, the tokens that it holds, and its busiest hours in UTC, which hint at your time zone.",
+            },
+          ],
+        },
+        {
+          kind: "text",
+          text: "When a scan finds something to improve, Pay a new address opens To Robinhood Chain on Send, where you pay a fresh address of yours from XMR for a clean start. On the review of a payment to Robinhood Chain, Check this address runs the same scan on the recipient.",
+        },
+        {
+          kind: "note",
+          text: `${SITE_NAME} asks the explorer through its relay, so the explorer never sees your IP address. The relay writes no log and forgets a scan after ${RELAY_MEMORY_MINUTES} minutes. A few scans in a row can hit its limit, so wait a few seconds and try again.`,
         },
       ],
     },
@@ -697,6 +849,7 @@ const REFERENCE: DocsGroup = {
             { label: "Decimals", value: `Up to ${MONERO.decimals}, after a point` },
             { label: "Amounts on screen", value: "Cut at the last digit shown, never rounded up" },
             { label: "Network fee", value: "Shown before you send" },
+            { label: "Highest network fee", value: `${APP.maxNetworkFee} XMR, or the payment stops` },
           ],
         },
         {
@@ -762,6 +915,18 @@ const REFERENCE: DocsGroup = {
             {
               term: "Floating rate",
               text: `A rate that follows the market until ${EXCHANGER.label} exchanges the XMR. Its minimum is lower.`,
+            },
+            {
+              term: "Privacy check",
+              text: "The check of the amount, the timing, and the address of a payment on its review. It runs on your Mac.",
+            },
+            {
+              term: "Proxy",
+              text: "A server that passes your traffic on, so that the node sees the proxy and not your IP address. Tor is one.",
+            },
+            {
+              term: "Payment link",
+              text: "A link in a QR code that names the chain, the coin, the amount, and the address of a payment.",
             },
             { term: "Transaction ID", text: "The public name of a transaction on the chain." },
           ],
@@ -911,7 +1076,7 @@ const PROJECT: DocsGroup = {
           kind: "facts",
           items: [
             { label: "Repository", value: REPOSITORY.code.label, href: REPOSITORY.code.href },
-            { label: "Latest release", value: `Version ${RELEASE.version}`, href: RELEASE.notesHref },
+            { label: "Latest release", value: `Version ${RELEASE.name}`, href: RELEASE.notesHref },
             { label: "Built with", value: "Flutter, and the wallet code of Monero through monero_c" },
             { label: "Bugs", value: REPOSITORY.issues.label, href: REPOSITORY.issues.href },
           ],
@@ -978,7 +1143,7 @@ const PROJECT: DocsGroup = {
 export const DOCS = {
   meta: {
     title: `Docs | ${SITE_NAME}`,
-    description: `How the ${SITE_NAME} wallet works: create or restore a wallet, send and receive XMR, pay on Robinhood Chain, choose your node, and keep your seed safe. Plus the ${TOKEN.ticker} token.`,
+    description: `How the ${SITE_NAME} wallet works: create or restore a wallet, send and receive XMR, pay on Robinhood Chain, check your privacy, choose your node, and keep your seed safe. Plus the ${TOKEN.ticker} token.`,
   },
   // The top of the page, like the title of the sunrise on the home page: a label between stars, the title in capitals,
   // and a lead in plain words.
@@ -988,7 +1153,7 @@ export const DOCS = {
     lead: "What the app does today, and how to keep your coins safe with it.",
     updatedLabel: "Updated",
     // The date of the last change to the text. Change it with the text.
-    updated: "6 October 2026",
+    updated: "8 October 2026",
   },
   sidebar: {
     label: "Docs",

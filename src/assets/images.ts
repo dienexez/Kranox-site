@@ -8,7 +8,8 @@ import logo from "@brand/logo/kranox-logo-small.svg";
 import heroFigure from "@brand/site/hero-figure.png";
 // The home screen of the desktop app, drawn by apps/wallet/integration_test/showcase_test.dart from the screens of
 // the app with sample data: a large balance and recent activity. It shows the wallet pages only, so the held
-// features stay out of it. The earlier picture from the mock stays in brand/site/app-desktop-wallet.png.
+// features stay out of it. From 8 Oct 2026 it shows the release 0.3.1 beta, with Privacy in the sidebar. The earlier
+// picture from the mock stays in brand/site/app-desktop-wallet.png.
 import appDesktopWallet from "@brand/site/app-wallet-home.png";
 // The ink drawings of the wallet features beside the sunrise, from the first site, and the QR code of the receive
 // widget, which the showcase test draws for the sample subaddress.
@@ -17,6 +18,8 @@ import featureNode from "@brand/site/concepts/node--openai-gpt-5.4-image-2--2026
 import featureScroll from "@brand/site/concepts/scroll--openai-gpt-5.4-image-2--20261002T153738--on-white.png";
 import featureSeed from "@brand/site/concepts/seed--openai-gpt-5.4-image-2--20261002T153738--on-white.png";
 import featureSend from "@brand/site/concepts/send--openai-gpt-5.4-image-2--20261002T153738--on-white.png";
+// The shield with the M of Monero, from the same set, for the privacy check. It joined the features on 8 Oct 2026.
+import featureShield from "@brand/site/concepts/shield--openai-gpt-5.4-image-2--20261002T153738--on-white.png";
 import featureSync from "@brand/site/concepts/sync--openai-gpt-5.4-image-2--20261002T153738--on-white.png";
 import widgetReceiveQr from "@brand/site/widget-receive-qr.png";
 // The horizontal logo of ChangeNOW, unchanged from the logo pack of changenow.io/press (/files/ChangeNOW.zip, 5 Oct
@@ -43,6 +46,7 @@ export const IMAGES = {
   featureScroll,
   featureSeed,
   featureSend,
+  featureShield,
   featureSync,
   widgetReceiveQr,
   toneOlive,

@@ -48,12 +48,15 @@ export function legalHref(slug: LegalSlug): string {
 export const DOWNLOADS_HREF = "/downloads";
 
 // The public repository of the app. The owner made it on 4 Oct 2026 under the organization Kranox-Labs. CHECKED 5 Oct
-// 2026, source the GitHub API: public, issues on, no license yet, so no text calls the code open source.
+// 2026, source the GitHub API: public, issues on, no license yet, so no text calls the code open source. The report of
+// the security review of 0.2.0 sits in its folder audit/: CHECKED 8 Oct 2026, it answers 200 without a login, and it
+// counts 22 findings fixed and 2 partly fixed in 0.3.1.
 const REPOSITORY_URL = "https://github.com/Kranox-Labs/Kranox";
 
 export const REPOSITORY = {
   code: { label: "Kranox-Labs/Kranox", href: REPOSITORY_URL },
   issues: { label: "Open an issue", href: `${REPOSITORY_URL}/issues` },
+  review: { label: "security review of 0.2.0", href: `${REPOSITORY_URL}/blob/main/audit/security-review-0.2.0.md` },
 } as const satisfies Record<string, ExternalLink>;
 
 // The mailbox of the project, from 4 Oct 2026. The legal pages give it as the address for questions.
@@ -82,8 +85,17 @@ export const EXCHANGER_TERMS = {
 } as const satisfies ExternalLink;
 
 // The relay of Kranox, which talks to the exchanger for the app, so that its key never sits in the app (apps/relay).
-// It runs from 5 Oct 2026 behind Cloudflare, and keeps no record of a request.
+// It runs from 5 Oct 2026 behind Cloudflare, and writes no log of a request. From 0.3.0 it also scans an address on
+// Robinhood Chain for the app. It holds two things in memory for ten minutes, with no IP address: a scan, so that a
+// second look at the same address spends no call, and its answer to the creation of a swap, so that a try again
+// makes no second exchange (apps/relay/src/config.mts, SCAN_CACHE_MS and CREATION_KEY_MS, 8 Oct 2026).
 export const RELAY_HOST = "relay.kranox.cash";
+export const RELAY_MEMORY_MINUTES = 10;
+
+// The sources that the relay asks for the scan of an address on Robinhood Chain: Alchemy first, and Blockscout when
+// Alchemy fails. CHECKED 8 Oct 2026, source the deploys of the relay in docs/HANDOFF.md: the live relay holds a key of
+// each.
+export const SCAN_SOURCES = { first: "Alchemy", fallback: "Blockscout" } as const;
 
 // The owner chose the X handle on 2 Oct 2026.
 export const X_HANDLE = "@kranoxlabs";
