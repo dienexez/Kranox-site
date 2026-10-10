@@ -1,0 +1,191 @@
+---
+// The text of an article, as Astro writes it from the Markdown file. The styles reach into that markup, so each rule
+// names its element. The headings of the second level are the parts that the list at the side links to.
+---
+
+<!--
+  The text of an article in the look of the docs: plain words in the reading ink, the headings in the serif, lists with
+  the orange dot of the pills, a quote on white paper, and code in a dark widget of the app.
+-->
+<div class="article-body text-plain" data-article-body>
+  <slot />
+</div>
+
+<style>
+  .article-body {
+    color: var(--ink-read);
+    font-size: var(--type-read);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+  }
+
+  .article-body > :global(*) {
+    max-width: var(--measure-read);
+  }
+
+  .article-body > :global(* + *) {
+    margin-top: 1.25rem;
+  }
+
+  .article-body > :global(h2) {
+    margin-top: 3.5rem;
+  }
+
+  .article-body > :global(h3) {
+    margin-top: 2.25rem;
+  }
+
+  .article-body > :global(:is(h2, h3) + *) {
+    margin-top: 0.875rem;
+  }
+
+  .article-body :global(:is(h2, h3)) {
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    /* A link to a part stops below the menu, which floats at the top of the screen. */
+    scroll-margin-top: var(--article-top);
+  }
+
+  .article-body :global(h2) {
+    font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+    line-height: 1.1;
+  }
+
+  .article-body :global(h3) {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .article-body :global(strong) {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .article-body :global(a) {
+    text-decoration: underline var(--border-thin);
+    text-decoration-color: var(--ink-line);
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--duration-short) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .article-body :global(a:hover) {
+      text-decoration-color: currentColor;
+    }
+  }
+
+  .article-body :global(:is(ul, ol)) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .article-body :global(:is(ul, ol) > li) {
+    position: relative;
+    padding-left: 1.5em;
+  }
+
+  /* A point of a list takes the orange dot of the pills of the wallet features in place of a bullet. */
+  .article-body :global(ul > li)::before {
+    content: "";
+    position: absolute;
+    top: calc((1lh - var(--size-dot)) / 2);
+    left: 0.375em;
+    width: var(--size-dot);
+    height: var(--size-dot);
+    border-radius: var(--radius-round);
+    background: var(--color-accent);
+  }
+
+  /* A step of a numbered list carries its number in the full ink. */
+  .article-body :global(ol) {
+    counter-reset: step;
+  }
+
+  .article-body :global(ol > li) {
+    counter-increment: step;
+  }
+
+  .article-body :global(ol > li)::before {
+    content: counter(step) ".";
+    position: absolute;
+    left: 0;
+    color: var(--ink);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A quote lies on white paper, like a note of the docs, in the serif. */
+  .article-body :global(blockquote) {
+    margin-inline: 0;
+    padding: 1.5rem 1.75rem;
+    border-radius: var(--radius-paper);
+    background: var(--color-white);
+    box-shadow: var(--shadow-paper);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    line-height: 1.4;
+  }
+
+  .article-body :global(blockquote > * + *) {
+    margin-top: 0.75rem;
+  }
+
+  .article-body :global(hr) {
+    border: 0;
+    border-top: var(--border-thin) solid var(--ink-line);
+  }
+
+  .article-body :global(:not(pre) > code) {
+    padding: 0.1em 0.4em;
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, var(--ink) 7%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    overflow-wrap: anywhere;
+  }
+
+  /* A block of code lies in a dark widget of the app, like the commands of the docs. */
+  .article-body :global(pre) {
+    padding: 1rem 1.125rem;
+    overflow-x: auto;
+    border-radius: 1.25rem;
+    background: var(--color-dark);
+    color: var(--color-light);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+
+  .article-body :global(img) {
+    border-radius: var(--radius-paper);
+  }
+
+  .article-body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+
+  .article-body :global(:is(th, td)) {
+    padding: 0.75rem 1rem 0.75rem 0;
+    border-bottom: var(--border-thin) solid var(--ink-line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .article-body :global(th) {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-body :global(a) {
+      transition: none;
+    }
+  }
+</style>

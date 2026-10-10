@@ -25,6 +25,10 @@ import widgetReceiveQr from "@brand/site/widget-receive-qr.png";
 // The horizontal logo of ChangeNOW, unchanged from the logo pack of changenow.io/press (/files/ChangeNOW.zip, 5 Oct
 // 2026). Its rules: the logo is always green and white, never monochrome, so it shows on dark ground.
 import changenowLogo from "@brand/site/changenow-logo-horizontal.svg";
+// The scene of the post of the release 0.2.0 without its title: a hoplite hands a sealed pouch to a ferryman, who
+// carries it across the strait to the city, as a payment goes from XMR to Robinhood Chain. The owner kept this take
+// on 6 Oct 2026. It is the cover of the first article until the owner picks one of its own.
+import coverHarbor from "@brand/post/concepts/release-harbor--google-gemini-3-pro-image--20261006T162104.png";
 import toneOlive from "@brand/site/concepts/tone-olive--openai-gpt-5.4-image-2--20261003T095558.png";
 import tonePass from "@brand/site/concepts/tone-pass--openai-gpt-5.4-image-2--20261003T095558.png";
 import tonePhalanx from "@brand/site/concepts/tone-phalanx--openai-gpt-5.4-image-2--20261003T095558.png";
@@ -56,3 +60,11 @@ export const IMAGES = {
   toneTemple,
   toneTrophy,
 } as const;
+
+// The covers of the articles, by the name that the field cover of an article gives. A cover is an engraving in the
+// style of the images of the posts on X, as wide as a post: 16 by 9.
+export const ARTICLE_COVERS = {
+  harbor: coverHarbor,
+} as const;
+
+export type ArticleCoverName = keyof typeof ARTICLE_COVERS;

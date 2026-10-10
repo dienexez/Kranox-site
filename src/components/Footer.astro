@@ -1,8 +1,17 @@
 ---
+import { listArticles } from "../data/articles.ts";
 import { COPY } from "../data/copy.ts";
 import { LEGAL } from "../data/legal.ts";
 import { SCENES } from "../data/scenes.ts";
-import { CONTACT_EMAIL, DOCS_HREF, DOWNLOADS_HREF, SOCIAL_LINKS, legalHref, sectionHref } from "../data/site.ts";
+import {
+  ARTICLES_HREF,
+  CONTACT_EMAIL,
+  DOCS_HREF,
+  DOWNLOADS_HREF,
+  SOCIAL_LINKS,
+  legalHref,
+  sectionHref,
+} from "../data/site.ts";
 import FooterLegal from "./FooterLegal.astro";
 import Scene from "./Scene.astro";
 
@@ -20,6 +29,10 @@ interface FooterColumn {
 
 const { footer } = COPY;
 
+// The blog shows in the footer once it holds an article to show, as in the menu.
+const articleLinks: readonly FooterLink[] =
+  (await listArticles()).length > 0 ? [{ label: footer.articles, href: ARTICLES_HREF }] : [];
+
 // The three columns of links: the pages of the site, the legal pages, and the places to follow the build.
 const columns: readonly FooterColumn[] = [
   {
@@ -28,6 +41,7 @@ const columns: readonly FooterColumn[] = [
       ...footer.sections.map((item) => ({ label: item.label, href: sectionHref(item.section) })),
       { label: footer.download, href: DOWNLOADS_HREF },
       { label: footer.docs, href: DOCS_HREF },
+      ...articleLinks,
     ],
   },
   {

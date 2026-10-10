@@ -1,16 +1,16 @@
 ---
-import DocsHero from "../components/docs/DocsHero.astro";
 import DocsSection from "../components/docs/DocsSection.astro";
 import DocsSidebar from "../components/docs/DocsSidebar.astro";
 import Footer from "../components/Footer.astro";
 import Menu from "../components/Menu.astro";
+import PageHero from "../components/PageHero.astro";
 import Scene from "../components/Scene.astro";
 import { COPY } from "../data/copy.ts";
 import { DOCS } from "../data/docs.ts";
 import { SCENES } from "../data/scenes.ts";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-const { meta, groups } = DOCS;
+const { meta, hero, groups } = DOCS;
 
 // Each section carries its place in the whole page, so the numbers run on from group to group.
 let count = 0;
@@ -35,7 +35,12 @@ const numbered = groups.map((group) => ({
     -->
     <div class="docs__top container">
       <div class="inset-wide">
-        <DocsHero />
+        <PageHero
+          label={hero.label}
+          title={hero.title}
+          lead={hero.lead}
+          note={`${hero.updatedLabel} ${hero.updated}`}
+        />
       </div>
     </div>
     <div class="docs__body container">
@@ -77,14 +82,14 @@ const numbered = groups.map((group) => ({
     /* The parts start this far below the top of the screen: below the menu, which floats there. */
     --docs-top: calc(var(--space-menu-top) + var(--size-menu-bar) + var(--space-24));
     /* The plain text needs more contrast than the soft ink of the labels. */
-    --docs-soft: color-mix(in srgb, var(--ink) 72%, transparent);
-    --docs-line: color-mix(in srgb, var(--ink) 16%, transparent);
+    --docs-soft: var(--ink-read);
+    --docs-line: var(--ink-line);
     --docs-pill: color-mix(in srgb, var(--color-white) 72%, transparent);
 
-    --docs-radius-paper: 1.5rem;
+    --docs-radius-paper: var(--radius-paper);
     --docs-radius-widget: 1.25rem;
     --docs-radius-field: 0.75rem;
-    --docs-shadow-paper: 0 1.5rem 3rem color-mix(in srgb, var(--color-black) 8%, transparent);
+    --docs-shadow-paper: var(--shadow-paper);
     --docs-shadow-widget: 0 1.5rem 3rem color-mix(in srgb, var(--color-black) 24%, transparent);
     --docs-pad-paper: 1.5rem 1.75rem;
     --docs-pad-paper-inline: 1.75rem;
@@ -97,7 +102,7 @@ const numbered = groups.map((group) => ({
     --docs-widget-soft: color-mix(in srgb, var(--color-light) 62%, transparent);
 
     --docs-size-control: 2.75rem;
-    --docs-size-dot: 0.4375rem;
+    --docs-size-dot: var(--size-dot);
     --docs-size-step: 3.5rem;
     --docs-size-fact-label: 11rem;
     /* A list that scrolls fades out over this height at its foot. */

@@ -1,19 +1,23 @@
-// The list at the side of the docs marks the section in view, as the reference does. When the list scrolls on its
-// own, it keeps the marked link in view. A click on a link puts the anchor of the section into the address, so that
-// the address can be shared.
-import { queryRequired } from "../dom.ts";
+// A list of the parts of a page at its side, as on the docs and on an article: the list marks the part in view, as
+// the reference of the docs does. When the list scrolls on its own, it keeps the marked link in view. A click on a
+// link puts the anchor of the part into the address, so that the address can be shared.
+import { queryRequired } from "./dom.ts";
 
-const SELECTORS = {
-  nav: "[data-docs-nav]",
-  link: "[data-docs-link]",
-  section: "[data-docs-section]",
-} as const;
+/** Where a page keeps its list and its parts. */
+export interface SectionListSelectors {
+  /** The list at the side. */
+  nav: string;
+  /** A link of the list to a part of the page. */
+  link: string;
+  /** A part of the page that a link of the list leads to. */
+  section: string;
+}
 
-// A section counts as the one in view once its top has passed this share of the height of the screen.
+// A part counts as the one in view once its top has passed this share of the height of the screen.
 const READ_LINE = 0.3;
 
-// The page counts as scrolled to its end within this many pixels of it. There the last section is in view, even
-// when it is too short for its top to reach the read line.
+// The page counts as scrolled to its end within this many pixels of it. There the last part is in view, even when it
+// is too short for its top to reach the read line.
 const END_SLACK_PX = 2;
 
 // The marked link keeps this much room to the edge of the list when the list scrolls to it.
@@ -22,14 +26,14 @@ const LINK_ROOM_PX = 24;
 // The value of aria-current for a link to a part of the same page.
 const CURRENT = "location";
 
-export function followSections(): void {
-  const nav = queryRequired(document, SELECTORS.nav);
+export function followSections(selectors: SectionListSelectors): void {
+  const nav = queryRequired(document, selectors.nav);
   const links = new Map(
-    [...nav.querySelectorAll<HTMLAnchorElement>(SELECTORS.link)].map((link) => [link.hash.slice(1), link]),
+    [...nav.querySelectorAll<HTMLAnchorElement>(selectors.link)].map((link) => [link.hash.slice(1), link]),
   );
-  const sections = [...document.querySelectorAll<HTMLElement>(SELECTORS.section)];
+  const sections = [...document.querySelectorAll<HTMLElement>(selectors.section)];
   if (sections.length === 0) {
-    throw new Error("The docs page has no section.");
+    throw new Error(`The page has no part for its list: ${selectors.section}`);
   }
   let marked: HTMLAnchorElement | undefined;
   let frame = 0;

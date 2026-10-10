@@ -1,7 +1,8 @@
 ---
 import { IMAGES } from "../assets/images.ts";
+import { listArticles } from "../data/articles.ts";
 import { COPY } from "../data/copy.ts";
-import { DOCS_HREF, DOWNLOADS_HREF, SOCIAL_LINKS, sectionHref } from "../data/site.ts";
+import { ARTICLES_HREF, DOCS_HREF, DOWNLOADS_HREF, SOCIAL_LINKS, sectionHref } from "../data/site.ts";
 import SocialIcon from "./SocialIcon.astro";
 
 const PANEL_ID = "menu-panel";
@@ -9,6 +10,8 @@ const PANEL_ID = "menu-panel";
 const { menu } = COPY;
 // The helmet of the brand, without a background, in its own colors: black ink, a white helmet, an orange crest.
 const logo = IMAGES.logo;
+// The blog shows in the menu once it holds an article to show, so that the menu never leads to an empty grid.
+const hasArticles = (await listArticles()).length > 0;
 const links = Object.entries(SOCIAL_LINKS) as [
   keyof typeof SOCIAL_LINKS,
   (typeof SOCIAL_LINKS)[keyof typeof SOCIAL_LINKS],
@@ -68,6 +71,13 @@ const links = Object.entries(SOCIAL_LINKS) as [
               {menu.docs}
             </a>
           </li>
+          {hasArticles && (
+            <li class="menu__item">
+              <a class="menu__section" href={ARTICLES_HREF}>
+                {menu.articles}
+              </a>
+            </li>
+          )}
         </ul>
         <ul class="menu__list menu__list--links">
           {links.map(([name, link]) => (

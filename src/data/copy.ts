@@ -33,6 +33,9 @@ const DOWNLOAD = "Download";
 // The name of the docs page, in the menu and in the footer.
 const DOCS = "Docs";
 
+// The name of the blog, in the menu and in the footer, from 9 Oct 2026.
+const ARTICLES = "Articles";
+
 export type WalletFeatureId = "hold" | "receive" | "send" | "privacy" | "activity" | "node";
 
 // A widget is a small piece of the app beside the drawing of a feature, after the widgets of butter.video: one
@@ -313,6 +316,8 @@ export const COPY = {
     cta: DOWNLOAD,
     // The docs page, after the sections of the home page. The owner asked for it on 5 Oct 2026.
     docs: DOCS,
+    // The blog, after the docs, while it holds an article to show. The owner asked for it on 9 Oct 2026.
+    articles: ARTICLES,
   },
   // The hero of the first site. The owner asked for it again on 3 Oct 2026.
   // The lead speaks in a picture, like the hero of Vizor: on 3 Oct 2026 the owner chose to hold some cards of the
@@ -367,6 +372,7 @@ export const COPY = {
     sections: SECTIONS.filter((item) => item.section !== "top"),
     download: DOWNLOAD,
     docs: DOCS,
+    articles: ARTICLES,
     followLabel: "Follow",
     statusLabel: "Status",
     status: "Building in public",

@@ -50,6 +50,8 @@
   --border-thick: 2px;
   --focus-ring: 3px;
   --radius-round: 50%;
+  /* The orange dot of a list, like the pills of the wallet features. */
+  --size-dot: 0.4375rem;
 
   /*
    * The menu floats at the top of the screen. It keeps fixed sizes in rem, like a set of buttons, so that it
@@ -95,6 +97,13 @@
   --font-weight-read: 400;
   --measure-read: 42rem;
 
+  /*
+   * White paper, like the panels of the drawings on the home page: the notes and tables of the docs, and the cards
+   * of the articles. It keeps fixed sizes in rem, like the long texts.
+   */
+  --radius-paper: 1.5rem;
+  --shadow-paper: 0 1.5rem 3rem color-mix(in srgb, var(--color-black) 8%, transparent);
+
   /* A part under the pointer keeps this share of its ink. */
   --opacity-soft: 0.5;
 
@@ -133,17 +142,22 @@
 
 /*
  * A theme gives a part its ground and its ink. The light theme is the default of the page.
- * The soft ink is a share of the ink, so each theme states it again.
+ * The soft ink is a share of the ink, so each theme states it again. Long plain text takes the reading ink: the soft
+ * ink at 50 percent is too faint for it on the cream. A thin line between parts takes the line ink.
  */
 :root,
 .theme-light {
   --ground: var(--color-light);
   --ink: var(--color-dark);
   --ink-soft: color-mix(in srgb, var(--color-dark) 50%, transparent);
+  --ink-read: color-mix(in srgb, var(--color-dark) 72%, transparent);
+  --ink-line: color-mix(in srgb, var(--color-dark) 16%, transparent);
 }
 
 .theme-dark {
   --ground: var(--color-dark);
   --ink: var(--color-light);
   --ink-soft: color-mix(in srgb, var(--color-light) 50%, transparent);
+  --ink-read: color-mix(in srgb, var(--color-light) 72%, transparent);
+  --ink-line: color-mix(in srgb, var(--color-light) 16%, transparent);
 }

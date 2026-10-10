@@ -1,0 +1,26 @@
+---
+import { ARTICLES } from "../../data/articles.ts";
+---
+
+<!--
+  Marks an article that is still a draft. Only the dev server shows a draft, so a visitor of the site never sees this
+  pill. It takes the dark words on the orange of the main action of the menu.
+-->
+<span class="draft-pill">{ARTICLES.draft}</span>
+
+<style>
+  .draft-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-dark);
+    font-size: 0.6875rem;
+    font-stretch: var(--font-stretch-text);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: var(--tracking-text);
+    text-transform: uppercase;
+  }
+</style>

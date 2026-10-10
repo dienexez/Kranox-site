@@ -6,6 +6,7 @@ import heroFontUrl from "@fontsource/eb-garamond/files/eb-garamond-latin-700-nor
 import "lenis/dist/lenis.css";
 import "../styles/tokens.css";
 import "../styles/global.css";
+import type { ImageMetadata } from "astro";
 import { getImage } from "astro:assets";
 import palette from "@brand/palette.json";
 import { IMAGES } from "../assets/images.ts";
@@ -14,7 +15,11 @@ import { SITE_NAME } from "../data/site.ts";
 interface Props {
   title: string;
   description: string;
+  /** The picture of the page when a link to it is shared. The banner of the brand, unless a page has its own. */
+  socialImage?: ImageMetadata;
   socialImageAlt: string;
+  /** What the page is for the cards of shared links: the site, or one article of the blog. */
+  kind?: "website" | "article";
 }
 
 // A browser without support for an SVG icon takes the PNG icon. A tab shows it at this size on a dense screen.
@@ -23,7 +28,7 @@ const TOUCH_ICON_SIZE_PX = 180;
 const SOCIAL_IMAGE_WIDTH_PX = 1200;
 const SOCIAL_IMAGE_HEIGHT_PX = 630;
 
-const { title, description, socialImageAlt } = Astro.props;
+const { title, description, socialImage: socialSource = IMAGES.banner, socialImageAlt, kind = "website" } = Astro.props;
 
 // The palette file is the one definition site of the base colors. The tokens build on these properties.
 const paletteCss = `:root{${Object.entries(palette.colors)
@@ -39,7 +44,7 @@ const touchIcon = await getImage({
   format: "png",
 });
 const socialImage = await getImage({
-  src: IMAGES.banner,
+  src: socialSource,
   width: SOCIAL_IMAGE_WIDTH_PX,
   height: SOCIAL_IMAGE_HEIGHT_PX,
   fit: "cover",
@@ -64,7 +69,7 @@ const socialImageUrl = new URL(socialImage.src, Astro.site);
     <link rel="icon" type="image/png" sizes={`${ICON_SIZE_PX}x${ICON_SIZE_PX}`} href={icon.src} />
     <link rel="icon" type="image/svg+xml" href={IMAGES.iconRoundVector.src} />
     <link rel="apple-touch-icon" href={touchIcon.src} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={kind} />
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />

@@ -1,0 +1,100 @@
+---
+import ArticleCard from "../../components/articles/ArticleCard.astro";
+import Footer from "../../components/Footer.astro";
+import Menu from "../../components/Menu.astro";
+import PageHero from "../../components/PageHero.astro";
+import Scene from "../../components/Scene.astro";
+import { ARTICLES, listArticles } from "../../data/articles.ts";
+import { COPY } from "../../data/copy.ts";
+import { SCENES } from "../../data/scenes.ts";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const { meta, hero } = ARTICLES;
+const articles = await listArticles();
+---
+
+<!--
+  The blog. The owner asked for it on 9 Oct 2026, like a blog with many articles to come, in a grid of three columns.
+  The look follows the home page, like the docs: the cream ground, the label between stars and the title in capitals,
+  the articles as cards of white paper, the band of bars, and the footer of the home page. The parts keep the room at
+  their sides of the wallet features through the same class.
+-->
+<BaseLayout title={meta.title} description={meta.description} socialImageAlt={COPY.meta.socialImageAlt}>
+  <Menu />
+  <main class="articles theme-light ground">
+    <div class="articles__top container">
+      <div class="inset-wide">
+        <PageHero label={hero.label} title={hero.title} lead={hero.lead} />
+      </div>
+    </div>
+    <div class="articles__body container">
+      <div class="inset-wide">
+        {articles.length > 0 ? (
+          <ul class="articles__grid grid">
+            {articles.map((article) => (
+              <li class="articles__item">
+                <ArticleCard article={article} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="articles__empty text-plain text-soft">{ARTICLES.empty}</p>
+        )}
+      </div>
+    </div>
+    <!-- A band of bars turns the cream into the dark ground of the footer, as below the hero of the home page. -->
+    <div class="articles__fence">
+      <Scene scene={SCENES.fence} />
+    </div>
+  </main>
+  <Footer />
+  <script>
+    import { initPageMotion } from "../../scripts/motion/index.ts";
+
+    initPageMotion();
+  </script>
+</BaseLayout>
+
+<style>
+  .articles__top {
+    padding-top: calc(var(--space-menu-top) + var(--size-menu-bar) + var(--space-136));
+    padding-bottom: var(--space-136);
+  }
+
+  .articles__body {
+    padding-bottom: var(--space-136);
+  }
+
+  /* As high as the band below the hero of the home page. */
+  .articles__fence {
+    height: calc(3 * var(--cell));
+  }
+
+  .articles__grid {
+    row-gap: var(--space-48);
+  }
+
+  /* One card fills a narrow row, two share a middle one, and three a wide one. */
+  .articles__item {
+    grid-column: 1 / -1;
+  }
+
+  .articles__empty {
+    font-size: var(--type-read-lead);
+    font-weight: var(--font-weight-read);
+    line-height: var(--leading-read);
+    text-align: center;
+  }
+
+  @media (min-width: 40rem) and (max-width: 61.99rem) {
+    .articles__item {
+      grid-column: span 2;
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .articles__item {
+      grid-column: span 4;
+    }
+  }
+</style>

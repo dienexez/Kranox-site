@@ -66,6 +66,14 @@ export const CONTACT_EMAIL = "dev@kranox.cash";
 // "Docs" of the footer leads to it.
 export const DOCS_HREF = "/docs";
 
+// The blog: the grid of the articles, and a page for each one. The owner asked for it on 9 Oct 2026. The id of an
+// article is the name of its file in src/content/articles/, without the extension.
+export const ARTICLES_HREF = "/articles";
+
+export function articleHref(id: string): string {
+  return `${ARTICLES_HREF}/${id}`;
+}
+
 // The exchanger of the bridge. On 3 Oct 2026 the owner chose an instant exchanger for the first version of the bridge,
 // with ChangeNOW first; on 5 Oct 2026 the owner asked for "Powered by ChangeNOW" on the site. CHECKED 5 Oct 2026,
 // source changenow.io/press: the brand is written "ChangeNOW" only.

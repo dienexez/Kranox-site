@@ -1,0 +1,163 @@
+---
+import type { MarkdownHeading } from "astro";
+import { ARTICLES } from "../../data/articles.ts";
+import { ARTICLES_HREF } from "../../data/site.ts";
+
+interface Props {
+  /** The parts of the article: its headings of the second level. */
+  parts: readonly MarkdownHeading[];
+}
+
+const { parts } = Astro.props;
+---
+
+<!--
+  The side of an article, like the side of the docs: the way back to the grid, then the parts of the article in plain
+  words under a small label in capitals. The part in view takes the orange dot. On a wide screen the side stays in
+  view while the text scrolls; on a narrow screen it stands above the text.
+-->
+<div class="article-side text-plain">
+  <a class="article-side__back" href={ARTICLES_HREF}>
+    <svg
+      class="article-side__arrow"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 12H5m6-6-6 6 6 6"></path>
+    </svg>
+    {ARTICLES.back}
+  </a>
+  {parts.length > 0 && (
+    <nav class="article-side__nav" aria-label={ARTICLES.contents} data-article-nav data-lenis-prevent>
+      <p class="article-side__label">{ARTICLES.contents}</p>
+      <ul class="article-side__list">
+        {parts.map((part) => (
+          <li>
+            <a class="article-side__link" href={`#${part.slug}`} data-article-link>
+              {part.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )}
+</div>
+
+<style>
+  .article-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+  }
+
+  .article-side__back {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: var(--space-8);
+    color: var(--ink);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    transition: opacity var(--duration-short) var(--ease-out);
+  }
+
+  .article-side__arrow {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  @media (hover: hover) {
+    .article-side__back:hover {
+      opacity: var(--opacity-soft);
+    }
+  }
+
+  .article-side__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  /* A small label in capitals, like the columns of the footer. It keeps its look in plain text. */
+  .article-side__label {
+    color: var(--ink-soft);
+    font-size: var(--type-p6);
+    font-stretch: var(--font-stretch-text);
+    font-weight: var(--font-weight-text);
+    line-height: var(--leading-p6);
+    letter-spacing: var(--tracking-text);
+    text-transform: uppercase;
+  }
+
+  /*
+   * A link of the list, in plain words. The part in view takes the full ink and the orange dot. Every link keeps the
+   * room of the dot, so that no word moves when the dot shows.
+   */
+  .article-side__link {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-8);
+    padding-block: 0.3125rem;
+    color: var(--ink-read);
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    transition: color var(--duration-short) var(--ease-out);
+  }
+
+  .article-side__link::before {
+    content: "";
+    flex: none;
+    width: var(--size-dot);
+    height: var(--size-dot);
+    border-radius: var(--radius-round);
+    /* The dot stands in the middle of the first line of a link. */
+    margin-top: calc((1lh - var(--size-dot)) / 2);
+    background: var(--color-accent);
+    opacity: 0;
+    transition: opacity var(--duration-short) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .article-side__link:hover {
+      color: var(--ink);
+    }
+  }
+
+  .article-side__link[aria-current] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .article-side__link[aria-current]::before {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-side__back,
+    .article-side__link,
+    .article-side__link::before {
+      transition: none;
+    }
+  }
+
+  /* On a wide screen the side stays in view, and its list scrolls on its own when the screen is short. */
+  @media (min-width: 62rem) {
+    .article-side {
+      position: sticky;
+      top: var(--article-top);
+      max-height: calc(var(--screen) - var(--article-top) - var(--space-24));
+    }
+
+    .article-side__nav {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+  }
+</style>
